@@ -26,9 +26,17 @@ Download [the latest JAR][2] or grab via Maven:
 ```
 
 ## Gradle
-Add to your build.gradle with simple way :
+Library from Maven repositories:
 ```groovy
-compile 'com.icaksama.rapidsphinx:master:1.1.1'
+repositories {
+    maven {
+        url 'https://dl.bintray.com/icaksama/RapidSphinx'
+    }
+}
+```
+Add to build.gradle :
+```groovy
+compile 'com.icaksama.rapidsphinx:master:1.1.1@aar'
 ```
 
 # How to Use

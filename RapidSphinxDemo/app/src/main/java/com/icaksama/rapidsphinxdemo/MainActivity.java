@@ -13,22 +13,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.List;package com.icaksama.rapidsphinx;
+import com.icaksama.rapidsphinx.RapidSphinx;
+import com.icaksama.rapidsphinx.RapidSphinxCompletionListener;
+import com.icaksama.rapidsphinx.RapidSphinxListener;
 
-        import android.Manifest;
-        import android.app.ProgressDialog;
-        import android.content.pm.PackageManager;
-        import android.os.Build;
-        import android.os.Bundle;
-        import android.support.v4.app.ActivityCompat;
-        import android.support.v4.content.ContextCompat;
-        import android.support.v7.app.AppCompatActivity;
-        import android.view.View;
-        import android.widget.Button;
-        import android.widget.EditText;
-        import android.widget.TextView;
-
-        import java.util.List;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements RapidSphinxListener {
 
@@ -120,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
     public void rapidSphinxDidStop(String reason, int code) {
         btnSync.setEnabled(true);
         btnRecognizer.setEnabled(true);
+        System.out.println();
         if (code == 500) { // 200 code for error
             System.out.println(reason);
         } else if (code == 522) { // 200 code for timed out
@@ -130,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
     }
 
     @Override
-    public void rapidSphinxFinalResult(String result, List<String> arrHypo, List<Double> scores) {
+    public void rapidSphinxFinalResult(String result, List<Double> scores) {
         txtResult.setText(result);
         if (result.equalsIgnoreCase(editText.getText().toString())) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
