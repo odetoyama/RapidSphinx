@@ -83,7 +83,8 @@ public void rapidSphinxDidStop(String reason, int code) {
 }
 
 @Override
-public void rapidSphinxFinalResult(String result, List<String> arrHypo, List<Double> scores) {
+// GET scores every single word from this method
+public void rapidSphinxFinalResult(String result, List<Double> scores) {
     System.out.println(result);
 }
 
