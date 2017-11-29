@@ -1,1 +1,1 @@
-include ':app', ':aars'
+include ':rapidsphinx', ':aars'
