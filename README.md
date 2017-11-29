@@ -7,6 +7,7 @@ Android library for offline speech recognition.
 - [x] Scoring system for every single word (range 0.0 - 10.0)
 - [x] Build dictonary and language model on the fly
 - [x] Detect unsupported words
+- [x] Speaker adaptation (In progress)
 - [x] SIMPLE TO USE!
 
 ## Preview
@@ -81,9 +82,9 @@ RapidSphinxListener have some methods must be @Override in your class/activity :
 ```java
 @Override
 public void rapidSphinxDidStop(String reason, int code) {
-    if (code == 500) { // 200 code for error
+    if (code == 500) { // 500 code for error
         System.out.println(reason);
-    } else if (code == 522) { // 200 code for timed out
+    } else if (code == 522) { // 522 code for timed out
         System.out.println(reason);
     } else if (code == 200) { // 200 code for finish speech
         System.out.println(reason);
@@ -91,9 +92,12 @@ public void rapidSphinxDidStop(String reason, int code) {
 }
 
 @Override
-// GET scores every single word from this method
 public void rapidSphinxFinalResult(String result, List<Double> scores) {
     System.out.println(result);
+    // Get score every single word
+    for (double score: scores) {
+        System.out.println(score);
+    }
 }
 
 @Override
