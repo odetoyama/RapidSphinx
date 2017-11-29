@@ -122,7 +122,7 @@ rapidSphinx.prepareRapidSphinx(new RapidSphinxCompletionListener() {
 ## Update The Vocabulary
 You can update the vocabulary on the fly:
 ```java
-rapidSphinx.updateVocabulary(editText.getText().toString(), new RapidSphinxCompletionListener() {
+rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidSphinxCompletionListener() {
     @Override
     public void rapidSphinxCompletedProcess() {
         System.out.println("Vocabulary updated!");
