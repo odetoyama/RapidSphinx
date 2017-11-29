@@ -10,7 +10,6 @@ Android library for offline speech recognition.
 - [x] SIMPLE TO USE!
 
 ## Download JAR
------
 Download [the latest JAR][2] or grab via Maven:
 ```xml
 <dependency>
@@ -21,14 +20,12 @@ Download [the latest JAR][2] or grab via Maven:
 ```
 
 ## Gradle
------
 Add to your build.gradle with simple way :
 ```groovy
 compile 'com.icaksama.rapidsphinx:master:1.1.1'
 ```
 
 ## MIT License
-------
 ```
 Copyright (c) 2017 Saiful Irham Wicaksana
 
