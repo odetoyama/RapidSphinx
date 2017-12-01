@@ -16,25 +16,7 @@ I have tried to speak in different word order:
     <img width="350" src="https://github.com/icaksama/RapidSphinx/blob/master/RapidSphinxAppPreview.gif?raw=true">
 </p>
 
-## Download JAR
-Download [the latest JAR][2] or grab via Maven:
-```xml
-<dependency>
-<groupId>com.icaksama.rapidsphinx</groupId>
-<artifactId>master</artifactId>
-<version>1.1.1</version>
-</dependency>
-```
-
 ## Gradle
-Library from Maven repositories:
-```groovy
-repositories {
-    maven {
-        url 'https://dl.bintray.com/icaksama/RapidSphinx'
-    }
-}
-```
 Add to build.gradle :
 ```groovy
 compile 'com.icaksama.rapidsphinx:master:1.1.1@aar'
@@ -42,7 +24,7 @@ compile 'com.icaksama.rapidsphinx:master:1.1.1@aar'
 
 # How to Use
 
-## Add Permissions
+## Add Request Permissions
 Add permissions to your Manifest:
 ```xml
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -147,6 +129,7 @@ rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidSphinxCompletionListene
 // Set the Timeout in miliseconds
 rapidSphinx.startRapidSphinx(10000);
 ```
+- Please look at RapidSphinxDemo for detail.
 
 ## MIT License
 ```
