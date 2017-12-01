@@ -131,6 +131,10 @@ rapidSphinx.startRapidSphinx(10000);
 ```
 - Please look at RapidSphinxDemo for detail.
 
+## Additional Libraries
+- [x] [RapidWave](https://github.com/icaksama/RapidWave)
+- [x] [RapidGram](https://github.com/icaksama/RapidGram)
+
 ## MIT License
 ```
 Copyright (c) 2017 Saiful Irham Wicaksana
