@@ -2,10 +2,9 @@
 Android library for offline speech recognition.
 
 ## Features
-- [x] Building custom dictonary with Array String
-- [x] Building custom language model (arpa file)
+- [x] Build dictonary on the fly
+- [x] Build language model on the fly
 - [x] Scoring system for every single word (range 0.0 - 10.0)
-- [x] Build dictonary and language model on the fly
 - [x] Detect unsupported words
 - [x] Speaker adaptation (In progress)
 - [x] SIMPLE TO USE!
@@ -19,7 +18,7 @@ I have tried to speak in different word order:
 ## Gradle
 Add to build.gradle :
 ```groovy
-compile 'com.icaksama.rapidsphinx:master:1.1.1@aar'
+compile 'com.icaksama.rapidsphinx:master:1.+@aar'
 ```
 
 # How to Use

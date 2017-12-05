@@ -15,7 +15,7 @@ ext {
     siteUrl = 'https://github.com/icaksama/RapidSphinx'
     gitUrl = 'https://github.com/icaksama/RapidSphinx.git'
 
-    libraryVersion = '1.1.2'
+    libraryVersion = '1.1.1'
 
     developerId = 'icaksama'
     developerName = 'Saiful Irham Wicaksana'
@@ -31,6 +31,12 @@ ant.importBuild 'assets.xml'
 preBuild.dependsOn(list, checksum)
 clean.dependsOn(clean_assets)
 // End
+
+ext {
+    PUBLISH_GROUP_ID = 'com.icaksama.rapidsphinx'
+    PUBLISH_ARTIFACT_ID = 'rapidsphinx'
+    PUBLISH_VERSION = '1.1.1'
+}
 
 android {
     compileSdkVersion 26
@@ -52,12 +58,19 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
     compile 'com.android.support:appcompat-v7:26.+'
     // Pocketsphinx configuration aar
     compile project(':aars')
     // End
 }
+
 
 // MAVEN INSTALLER
 group = publishedGroupId

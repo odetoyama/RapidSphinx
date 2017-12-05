@@ -19,6 +19,12 @@ android {
     }
 }
 
+repositories {
+    maven {
+        url 'https://dl.bintray.com/icaksama/RapidSphinx'
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -26,6 +32,6 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
-    compile 'com.icaksama.rapidsphinx:master:1.1.1@aar'
+    compile 'com.icaksama.rapidsphinx:master:1.+@aar'
     testCompile 'junit:junit:4.12'
 }

@@ -1,0 +1,24 @@
+\data\
+ngram 1=5
+ngram 2=4
+ngram 3=0
+
+\1-grams:
+-1.0000 </s> -0.3010
+-1.0000 <s> -0.2553
+-1.0000 ICAKSAMA -0.2553
+-1.0000 MY -0.2553
+-1.0000 NAME -0.2553
+
+\2-grams:
+-0.3010 <s> MY 0.0000
+-0.3010 ICAKSAMA </s> -0.3010
+-0.3010 MY NAME 0.0000
+-0.3010 NAME ICAKSAMA 0.0000
+
+\3-grams:
+-0.3010 <s> MY NAME -0.3010
+-0.3010 MY NAME ICAKSAMA -0.3010
+-0.3010 NAME ICAKSAMA </s>
+
+\end\

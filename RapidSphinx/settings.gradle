@@ -1,1 +1,4 @@
-include ':master', ':aars'
+include ':master'
+
+include ':aars'
+project(':aars').projectDir = new File(settingsDir, './aars')
