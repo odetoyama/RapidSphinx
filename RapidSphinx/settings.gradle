@@ -1,4 +1,4 @@
 include ':master'
 
-include ':aars'
-project(':aars').projectDir = new File(settingsDir, './aars')
+//include ':aars'
+//project(':aars').projectDir = new File(settingsDir, './aars')

@@ -1,7 +1,75 @@
 apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "25.0.0"
+    publishNonDefault true
+    defaultConfig {
+//        applicationId "com.icaksama.rapidsphinx"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+    }
+    buildTypes {
+        debug {
+
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+// Compile pocketsphinx assets configuration
+ant.importBuild 'assets.xml'
+preBuild.dependsOn(list, checksum)
+clean.dependsOn(clean_assets)
+// End
+
+repositories {
+    flatDir{
+        dirs 'libs'
+    }
+}
+dependencies {
+    compile ('com.android.support:appcompat-v7:26.+') {
+        transitive = true
+    }
+    compile(group: 'edu.cmu.pocketsphinx', name: 'pocketsphinx-android-5prealpha-release', version: '1.1.1', ext:'aar') {
+        transitive = true
+    }
+//    compile project(':aars') {
+//        transitive = true
+//    }
+//    compile ('edu.cmu.pocketsphinx:pocketsphinx-android-5prealpha-release:1.1.1@aar') {
+//        transitive = true
+//        changing = true
+//    }
+//    compile project(':aars') {
+//        transitive = true
+//        changing = true
+//    }
+//    releaseCompile(group: 'edu.cmu.pocketsphinx', name: 'pocketsphinx-android-5prealpha-release', version: '1.1.1', ext: 'aar') {
+//        transitive=true
+//        changing=true
+//    }
+//    debugCompile(group: 'edu.cmu.pocketsphinx', name: 'pocketsphinx-android-5prealpha-release', version: '1.1.1', ext: 'aar') {
+//        transitive=true
+//        changing=true
+//    }
+//    compile(name: 'pocketsphinx-android-5prealpha-release', ext: 'aar') {
+//        transitive = true;
+//    }
+    // End
+}
+
+
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
-
 ext {
     bintrayRepo = 'RapidSphinx'
     bintrayName = 'master'
@@ -15,7 +83,7 @@ ext {
     siteUrl = 'https://github.com/icaksama/RapidSphinx'
     gitUrl = 'https://github.com/icaksama/RapidSphinx.git'
 
-    libraryVersion = '1.1.2'
+    libraryVersion = '1.2.0'
 
     developerId = 'icaksama'
     developerName = 'Saiful Irham Wicaksana'
@@ -24,39 +92,6 @@ ext {
     licenseName = 'MIT License'
     licenseUrl = 'https://github.com/icaksama/RapidSphinx/blob/master/LICENSE'
     allLicenses = ["MIT"]
-}
-
-// Compile pocketsphinx assets configuration
-ant.importBuild 'assets.xml'
-preBuild.dependsOn(list, checksum)
-clean.dependsOn(clean_assets)
-// End
-
-android {
-    compileSdkVersion 26
-    buildToolsVersion "25.0.0"
-    defaultConfig {
-//        applicationId "com.icaksama.rapidsphinx"
-        minSdkVersion 15
-        targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        vectorDrawables.useSupportLibrary = true
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-dependencies {
-    compile 'com.android.support:appcompat-v7:26.+'
-    // Pocketsphinx configuration aar
-    compile project(':aars')
-    // End
 }
 
 // MAVEN INSTALLER
@@ -93,7 +128,6 @@ install {
                     connection gitUrl
                     developerConnection gitUrl
                     url siteUrl
-
                 }
             }
         }
@@ -158,6 +192,54 @@ bintray {
         }
     }
 }
+// END - -- -
+
+// AAR Dependencies Setting
+//apply plugin: 'maven'
+////configurations {
+////    optional
+////    compile.extendsFrom optional
+////}
+//
+//def localReleaseDest = "${buildDir}/release/${libraryVersion}"
+//uploadArchives {
+//    repositories.mavenDeployer {
+//        pom.groupId = publishedGroupId
+//        pom.artifactId = artifact
+//        pom.version = libraryVersion
+//
+//        pom.withXml {
+//            asNode().dependencies.dependency.findAll { xmlDep ->
+//                // mark optional dependencies
+//                if (project.configurations.optional.allDependencies.findAll { dep ->
+//                    xmlDep.groupId.text() == dep.group && xmlDep.artifactId.text() == dep.name
+//                }) {
+//                    def xmlOptional = xmlDep.optional[0];
+//                    if (!xmlOptional) {
+//                        xmlOptional = xmlDep.appendNode('optional')
+//                    }
+//                    xmlOptional.value = 'true';
+//                }
+//            }
+//        }
+//
+//        // Add other pom properties here if you want (developer details / licenses)
+//        repository(url: "file://${localReleaseDest}")
+//    }
+//}
+//
+//task zipRelease(type: Zip) {
+//    from localReleaseDest
+//    destinationDir buildDir
+//    archiveName "release-${version}.zip"
+//}
+//
+//task generateRelease << {
+//    println "Release ${version} can be found at ${localReleaseDest}/"
+//    println "Release ${version} zipped can be found ${buildDir}/release-${version}.zip"
+//}
+//generateRelease.dependsOn(uploadArchives)
+//generateRelease.dependsOn(zipRelease)
 // END - -- -
 
 //apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'

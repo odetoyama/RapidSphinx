@@ -8,7 +8,6 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/aars" />
             <option value="$PROJECT_DIR$/master" />
           </set>
         </option>

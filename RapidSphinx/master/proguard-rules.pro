@@ -23,3 +23,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-dontobfuscate
+# See https://speakerdeck.com/chalup/proguard
+-optimizations !code/allocation/variable
+
+-keep public class * {
+    public protected *;
+}

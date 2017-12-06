@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RapidSphinx.iml" filepath="$PROJECT_DIR$/RapidSphinx.iml" />
-      <module fileurl="file://$PROJECT_DIR$/aars/aars.iml" filepath="$PROJECT_DIR$/aars/aars.iml" />
       <module fileurl="file://$PROJECT_DIR$/master/master.iml" filepath="$PROJECT_DIR$/master/master.iml" />
     </modules>
   </component>
