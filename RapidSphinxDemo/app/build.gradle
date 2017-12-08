@@ -12,16 +12,10 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-repositories {
-    maven {
-        url 'https://dl.bintray.com/icaksama/RapidSphinx'
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//        }
     }
 }
 
@@ -32,6 +26,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
-    compile 'com.icaksama.rapidsphinx:master:1.2.0'
+    compile 'com.icaksama.rapidsphinx:master:1.4.4@aar'
+
     testCompile 'junit:junit:4.12'
 }

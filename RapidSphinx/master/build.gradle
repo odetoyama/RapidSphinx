@@ -3,20 +3,15 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 26
     buildToolsVersion "25.0.0"
-    publishNonDefault true
+//    publishNonDefault true
     defaultConfig {
 //        applicationId "com.icaksama.rapidsphinx"
         minSdkVersion 15
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
-        debug {
-
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -30,218 +25,9 @@ preBuild.dependsOn(list, checksum)
 clean.dependsOn(clean_assets)
 // End
 
-repositories {
-    flatDir{
-        dirs 'libs'
-    }
-}
 dependencies {
-    compile ('com.android.support:appcompat-v7:26.+') {
-        transitive = true
-    }
-    compile(group: 'edu.cmu.pocketsphinx', name: 'pocketsphinx-android-5prealpha-release', version: '1.1.1', ext:'aar') {
-        transitive = true
-    }
-//    compile project(':aars') {
-//        transitive = true
-//    }
-//    compile ('edu.cmu.pocketsphinx:pocketsphinx-android-5prealpha-release:1.1.1@aar') {
-//        transitive = true
-//        changing = true
-//    }
-//    compile project(':aars') {
-//        transitive = true
-//        changing = true
-//    }
-//    releaseCompile(group: 'edu.cmu.pocketsphinx', name: 'pocketsphinx-android-5prealpha-release', version: '1.1.1', ext: 'aar') {
-//        transitive=true
-//        changing=true
-//    }
-//    debugCompile(group: 'edu.cmu.pocketsphinx', name: 'pocketsphinx-android-5prealpha-release', version: '1.1.1', ext: 'aar') {
-//        transitive=true
-//        changing=true
-//    }
-//    compile(name: 'pocketsphinx-android-5prealpha-release', ext: 'aar') {
-//        transitive = true;
-//    }
-    // End
+    compile 'com.android.support:appcompat-v7:26.1.0'
 }
 
-
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
-ext {
-    bintrayRepo = 'RapidSphinx'
-    bintrayName = 'master'
-
-    publishedGroupId = 'com.icaksama.rapidsphinx'
-    libraryName = 'RapidSphinx'
-    artifact = 'master'
-
-    libraryDescription = 'The basic program to use RapidSphinx library.'
-
-    siteUrl = 'https://github.com/icaksama/RapidSphinx'
-    gitUrl = 'https://github.com/icaksama/RapidSphinx.git'
-
-    libraryVersion = '1.2.0'
-
-    developerId = 'icaksama'
-    developerName = 'Saiful Irham Wicaksana'
-    developerEmail = 'icaksama@gmail.com'
-
-    licenseName = 'MIT License'
-    licenseUrl = 'https://github.com/icaksama/RapidSphinx/blob/master/LICENSE'
-    allLicenses = ["MIT"]
-}
-
-// MAVEN INSTALLER
-group = publishedGroupId
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                packaging 'aar'
-                groupId publishedGroupId
-                artifactId artifact
-
-                // Add your description here
-                name libraryName
-                description libraryDescription
-                url siteUrl
-
-                // Set your license
-                licenses {
-                    license {
-                        name licenseName
-                        url licenseUrl
-                    }
-                }
-                developers {
-                    developer {
-                        id developerId
-                        name developerName
-                        email developerEmail
-                    }
-                }
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url siteUrl
-                }
-            }
-        }
-    }
-}
-// END - - - -
-
-
-// LIB SETTINGS
-version = libraryVersion
-if (project.hasProperty("android")) { // Android libraries
-    task sourcesJar(type: Jar) {
-        classifier = 'sources'
-        from android.sourceSets.main.java.srcDirs
-    }
-
-    task javadoc(type: Javadoc) {
-        source = android.sourceSets.main.java.srcDirs
-        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    }
-} else { // Java libraries
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-// Bintray
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-
-    configurations = ['archives']
-    pkg {
-        repo = bintrayRepo
-        name = bintrayName
-        desc = libraryDescription
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = allLicenses
-        publish = true
-        publicDownloadNumbers = true
-        version {
-            desc = libraryDescription
-            gpg {
-                sign = true //Determines whether to GPG sign the files. The default is false
-                passphrase = properties.getProperty("bintray.gpg.password")
-                //Optional. The passphrase for GPG signing'
-            }
-        }
-    }
-}
-// END - -- -
-
-// AAR Dependencies Setting
-//apply plugin: 'maven'
-////configurations {
-////    optional
-////    compile.extendsFrom optional
-////}
-//
-//def localReleaseDest = "${buildDir}/release/${libraryVersion}"
-//uploadArchives {
-//    repositories.mavenDeployer {
-//        pom.groupId = publishedGroupId
-//        pom.artifactId = artifact
-//        pom.version = libraryVersion
-//
-//        pom.withXml {
-//            asNode().dependencies.dependency.findAll { xmlDep ->
-//                // mark optional dependencies
-//                if (project.configurations.optional.allDependencies.findAll { dep ->
-//                    xmlDep.groupId.text() == dep.group && xmlDep.artifactId.text() == dep.name
-//                }) {
-//                    def xmlOptional = xmlDep.optional[0];
-//                    if (!xmlOptional) {
-//                        xmlOptional = xmlDep.appendNode('optional')
-//                    }
-//                    xmlOptional.value = 'true';
-//                }
-//            }
-//        }
-//
-//        // Add other pom properties here if you want (developer details / licenses)
-//        repository(url: "file://${localReleaseDest}")
-//    }
-//}
-//
-//task zipRelease(type: Zip) {
-//    from localReleaseDest
-//    destinationDir buildDir
-//    archiveName "release-${version}.zip"
-//}
-//
-//task generateRelease << {
-//    println "Release ${version} can be found at ${localReleaseDest}/"
-//    println "Release ${version} zipped can be found ${buildDir}/release-${version}.zip"
-//}
-//generateRelease.dependsOn(uploadArchives)
-//generateRelease.dependsOn(zipRelease)
-// END - -- -
-
-//apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
-//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+apply from: 'bintray.gradle'
+//apply from: 'bintray-upload.gradle'
