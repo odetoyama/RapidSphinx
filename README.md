@@ -18,7 +18,7 @@ I have tried to speak in different word order:
 ## Gradle
 Add to build.gradle :
 ```groovy
-compile 'com.icaksama.rapidsphinx:master:1.+@aar'
+compile 'com.icaksama.rapidsphinx:master:1.+'
 ```
 
 # How to Use
