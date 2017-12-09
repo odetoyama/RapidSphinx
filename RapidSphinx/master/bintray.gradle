@@ -15,7 +15,7 @@ ext {
     siteUrl = 'https://github.com/icaksama/RapidSphinx'
     gitUrl = 'https://github.com/icaksama/RapidSphinx.git'
 
-    libraryVersion = '1.4.4'
+    libraryVersion = '1.5.3'
 
     developerId = 'icaksama'
     developerName = 'Saiful Irham Wicaksana'

@@ -6,8 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 
-import com.icaksama.rapidsphinx.pocketsphinx.*;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,14 +17,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-//import edu.cmu.pocketsphinx.Assets;
-//import edu.cmu.pocketsphinx.Hypothesis;
-//import edu.cmu.pocketsphinx.NGramModel;
-//import edu.cmu.pocketsphinx.RecognitionListener;
-//import edu.cmu.pocketsphinx.Segment;
-//import edu.cmu.pocketsphinx.SegmentIterator;
-//import edu.cmu.pocketsphinx.SpeechRecognizer;
-//import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
+import edu.cmu.pocketsphinx.Assets;
+import edu.cmu.pocketsphinx.Hypothesis;
+import edu.cmu.pocketsphinx.NGramModel;
+import edu.cmu.pocketsphinx.RecognitionListener;
+import edu.cmu.pocketsphinx.Segment;
+import edu.cmu.pocketsphinx.SegmentIterator;
+import edu.cmu.pocketsphinx.SpeechRecognizer;
+import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 
 /**
  * Created by icaksama on 16/11/17.
