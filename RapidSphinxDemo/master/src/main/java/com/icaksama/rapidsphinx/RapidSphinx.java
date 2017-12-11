@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
 import java.io.File;
@@ -24,6 +23,7 @@ import edu.cmu.pocketsphinx.NGramModel;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.Segment;
 import edu.cmu.pocketsphinx.SegmentIterator;
+import edu.cmu.pocketsphinx.SpeechRecognizer;
 import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 
 /**
@@ -34,7 +34,7 @@ public class RapidSphinx implements RecognitionListener {
 
     // Basic Setting
     private String ARPA_SEARCH_ID = "icaksama";
-    private RapidRecognizer rapidRecognizer;
+    private SpeechRecognizer speechRecognizer;
     private Context context;
     private String[] words = null;
     private Utilities util = new Utilities();
@@ -80,27 +80,33 @@ public class RapidSphinx implements RecognitionListener {
                 try {
                     Assets assetsDir = new Assets(context);
                     File assetDir = assetsDir.syncAssets();
-                    SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
-                    speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
-                    speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
-                    speechRecognizerSetup.setFloat("-samprate", 16000);
-//                    config.setBoolean("-allphone_ci", allPhoneCI);
-//                    config.setFloat("-vad_threshold", vadThreshold);
-//                    config.setInt("-maxwpf", maxWPF);
-//                    config.setInt("-maxhmmpf", maxHMMPF);
-//                    config.setInt("-maxcdsenpf", 2000);
-//                    config.setInt("-ds", 3);
-//                    config.setString("-ci_pbeam", "1e-10");
-//                    config.setFloat("-subvq", 0.001);
-//                    config.setBoolean("-fwdflat ", false);
-//                    config.setBoolean("-bestpath", false);
-//                    config.setBoolean("-pl_window", plWindow);
-//                    config.setBoolean("-lponlybeam", lPonlyBeam);
-                    rapidRecognizer = new RapidRecognizer(assetDir, speechRecognizerSetup.getRecognizer().getDecoder().getConfig());
-                    rapidRecognizer.addRapidListener(RapidSphinx.this);
+//                    File oldFile = new File(assetDir, ARPA_SEARCH_ID + ".arpa");
+                    File newFile = new File(assetDir, "arpas/"+ ARPA_SEARCH_ID +"-new.arpa");
+                    speechRecognizer = SpeechRecognizerSetup.defaultSetup()
+                            .setAcousticModel(new File(assetDir, "en-us-ptm"))
+                            .setDictionary(new File(assetDir, "cmudict-en-us.dict"))
+                            .setBoolean("-remove_noise", true)
+//                            .setBoolean("-allphone_ci", allPhoneCI)
+//                            .setFloat("-vad_threshold", vadThreshold)
+//                            .setInteger("-maxwpf", maxWPF)
+//                            .setInteger("-maxhmmpf", maxHMMPF)
+//                            .setInteger("-maxcdsenpf", 2000)
+//                            .setInteger("-ds", 3)
+//                            .setString("-ci_pbeam", "1e-10")
+//                            .setFloat("-subvq", 0.001)
+//                            .setString("-lm", newFile.getPath())
+//                            .setBoolean("-fwdflat ", false)
+//                            .setBoolean("-bestpath", false)
+//                            .setFloat("-samprate", 16000)
+//                            .setBoolean("-pl_window", plWindow)
+//                            .setBoolean("-lponlybeam", lPonlyBeam)
+                            .getRecognizer();
+//                    speechRecognizer.getDecoder().getConfig().setString("-lm", newFile.getPath());
+//                    speechRecognizer.getDecoder().setLmFile(ARPA_SEARCH_ID, newFile.getPath());
                     if (rawLogAvailable) {
-                        rapidRecognizer.getRapidDecoder().getConfig().setString("-rawlogdir", assetDir.getPath());
+                        speechRecognizer.getDecoder().getConfig().setString("-rawlogdir", assetDir.getPath());
                     }
+                    speechRecognizer.addListener(RapidSphinx.this);
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                     e.printStackTrace();
@@ -123,11 +129,16 @@ public class RapidSphinx implements RecognitionListener {
             System.out.println("Perrmission record not granted!");
         } else {
             scores.clear();
-            rapidRecognizer.startRapidListening(ARPA_SEARCH_ID, timeOut);
+            speechRecognizer.startListening(ARPA_SEARCH_ID, timeOut);
+
+//            File newFile = new File(assetDir, "arpas/"+ ARPA_SEARCH_ID +"-new.arpa");
+//            speechRecognizer.getDecoder().getConfig().setString("-lm", newFile.getPath());
+
+//            speechRecognizer.getDecoder().setLmFile(ARPA_SEARCH_ID, newFile.getPath());
         }
     }
 
-    public void updateVocabulary(final String words, @Nullable final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
+    public void updateVocabulary(final String words, final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
         new AsyncTask<Void, Void, Exception>(){
             @Override
             protected void onPreExecute() {
@@ -135,8 +146,12 @@ public class RapidSphinx implements RecognitionListener {
             }
             @Override
             protected Exception doInBackground(Void... params) {
-                generateDictonary(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
+//                RapidSphinx.this.words = ;
+//                generateDictonary(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
                 generateNGramModel(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
+
+//                File newFile = new File(assetDir, "arpas/"+ ARPA_SEARCH_ID +"-new.arpa");
+//                speechRecognizer.addNgramSearch("icaksama", newFile);
                 return null;
             }
             @Override
@@ -153,8 +168,8 @@ public class RapidSphinx implements RecognitionListener {
     }
 
 
-    public void updateVocabulary(final String[] words, @Nullable final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
-        new AsyncTask<Void, Void, Exception>() {
+    public void updateVocabulary(final String[] words, final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
+        new AsyncTask<Void, Void, Exception>(){
             @Override
             protected void onPreExecute() {
                 System.out.println("Updating vocabulary!");
@@ -163,18 +178,16 @@ public class RapidSphinx implements RecognitionListener {
             protected Exception doInBackground(Void... params) {
                 RapidSphinx.this.words = new HashSet<String>(Arrays.asList(words)).toArray(new String[0]);
                 generateDictonary(RapidSphinx.this.words);
-                generateNGramModel(RapidSphinx.this.words);
+                // Use this for instance
+                speechRecognizer.getDecoder().setLm(ARPA_SEARCH_ID, generateNGramModel(RapidSphinx.this.words));
+                // Use this with file
+//              speechRecognizer.addNgramSearch("icaksama", newFile);
                 return null;
             }
             @Override
             protected void onPostExecute(Exception e) {
                 System.out.println("Vocabulary updated!");
-                if (rapidSphinxCompletionListener != null) {
-                    rapidSphinxCompletionListener.rapidSphinxCompletedProcess();
-                }
-                if (rapidSphinxListener != null) {
-                    rapidSphinxListener.rapidSphinxUnsupportedWords(unsupportedWords);
-                }
+                rapidSphinxCompletionListener.rapidSphinxCompletedProcess();
             }
         }.execute();
     }
@@ -184,14 +197,14 @@ public class RapidSphinx implements RecognitionListener {
         try {
             File fileOut = new File(assetDir, "arpas/" + ARPA_SEARCH_ID + ".dict");
             File fullDic = new File(assetDir, "cmudict-en-us.dict");
-            rapidRecognizer.getRapidDecoder().loadDict(fullDic.getPath(), null, "dict");
+            speechRecognizer.getDecoder().loadDict(fullDic.getPath(), null, "dict");
             if (fileOut.exists()){
                 fileOut.delete();
             }
             System.out.println("Words " + words.length);
             FileOutputStream outputStream = new FileOutputStream(fileOut);
             for (String word: words) {
-                String pronoun = rapidRecognizer.getRapidDecoder().lookupWord(word);
+                String pronoun = speechRecognizer.getDecoder().lookupWord(word);
                 if (pronoun != null) {
                     String wordN = word + " ";
                     outputStream.write(wordN.toLowerCase(Locale.ENGLISH).getBytes(Charset.forName("UTF-8")));
@@ -202,13 +215,13 @@ public class RapidSphinx implements RecognitionListener {
                 }
             }
             outputStream.close();
-            rapidRecognizer.getRapidDecoder().loadDict(fileOut.getPath(), null, "dict");
+            speechRecognizer.getDecoder().loadDict(fileOut.getPath(), null, "dict");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void generateNGramModel(String[] words) {
+    private NGramModel generateNGramModel(String[] words) {
         File oldFile = new File(assetDir, ARPA_SEARCH_ID + ".arpa");
         File newFile = new File(assetDir, "arpas/"+ ARPA_SEARCH_ID +"-new.arpa");
         try {
@@ -219,17 +232,18 @@ public class RapidSphinx implements RecognitionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        NGramModel nGramModel = new NGramModel(rapidRecognizer.getRapidDecoder().getConfig(),
-                rapidRecognizer.getRapidDecoder().getLogmath(), newFile.getPath());
-        nGramModel.prob(words);
+        NGramModel nGramModel = new NGramModel(speechRecognizer.getDecoder().getConfig(),
+                speechRecognizer.getDecoder().getLogmath(), newFile.getPath());
+//        NGramModel nGramModel = speechRecognizer.getDecoder().getLm(ARPA_SEARCH_ID);
+//        nGramModel.prob(words);
         for (String word: words) {
             nGramModel.addWord(word, 2);
         }
-        rapidRecognizer.getRapidDecoder().setLm(ARPA_SEARCH_ID, nGramModel);
-    }
-
-    public RapidRecorder getRapidRecorder() {
-        return rapidRecognizer.getRapidRecorder();
+        nGramModel.write(newFile.getPath(), 1);
+//        speechRecognizer.addNgramSearch(ARPA_SEARCH_ID, newFile);
+        speechRecognizer.getDecoder().getConfig().setString("-lm", newFile.getPath());
+//        speechRecognizer.getDecoder().setLm(ARPA_SEARCH_ID, nGramModel);
+        return nGramModel;
     }
 
     public void addListener(RapidSphinxListener rapidSphinxListener) {
@@ -334,7 +348,7 @@ public class RapidSphinx implements RecognitionListener {
                 e.printStackTrace();
             }
         }
-        rapidRecognizer.stopRapid();
+//        speechRecognizer.stop();
         if (rapidSphinxListener != null) {
             rapidSphinxListener.rapidSphinxDidStop("End of Speech!", 200);
         }
@@ -352,10 +366,10 @@ public class RapidSphinx implements RecognitionListener {
     @Override
     public void onResult(Hypothesis hypothesis) {
         if (rapidSphinxListener != null) {
-            SegmentIterator segmentIterator = rapidRecognizer.getRapidDecoder().seg().iterator();
+            SegmentIterator segmentIterator = speechRecognizer.getDecoder().seg().iterator();
             while (segmentIterator.hasNext()) {
                 Segment segment = segmentIterator.next();
-                double score =  rapidRecognizer.getRapidDecoder().getLogmath().exp(segment.getProb());
+                double score =  speechRecognizer.getDecoder().getLogmath().exp(segment.getProb());
                 if (!segment.getWord().contains("<") && !segment.getWord().contains(">")) {
                     scores.add(score);
                 }
@@ -368,7 +382,7 @@ public class RapidSphinx implements RecognitionListener {
 
     @Override
     public void onError(Exception e) {
-        rapidRecognizer.stopRapid();
+        speechRecognizer.stop();
         if (rapidSphinxListener != null) {
             rapidSphinxListener.rapidSphinxDidStop(e.getMessage(), 500);
         }
@@ -376,7 +390,7 @@ public class RapidSphinx implements RecognitionListener {
 
     @Override
     public void onTimeout() {
-        rapidRecognizer.stopRapid();
+        speechRecognizer.stop();
         if (rapidSphinxListener != null) {
             rapidSphinxListener.rapidSphinxDidStop("Speech timed out!", 522);
         }

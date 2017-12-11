@@ -1,0 +1,23 @@
+-lowerf 130
+-upperf 6800
+-nfilt 25
+-transform dct
+-lifter 22
+-feat 1s_c_d_dd
+-svspec 0-12/13-25/26-38
+-agc none
+-cmn current
+-varnorm no
+-model ptm
+-cmninit 40,10,10
+-subvq Communicator_40.cd_cont_4000/subvq
+-beam 1e-60
+-wbeam 1e-40
+-ci_pbeam 1e-8
+-subvqbeam 1e-2
+-maxhmmpf 2000
+-maxcdsenpf 1000
+-maxwpf 8
+-ds 3
+-inmic yes
+

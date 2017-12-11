@@ -4,6 +4,7 @@ Android library for offline speech recognition.
 ## Features
 - [x] Build dictonary on the fly
 - [x] Build language model on the fly
+- [x] Support PCM Recorder 16bits/mono (wav file)
 - [x] Scoring system for every single word (range 0.0 - 10.0)
 - [x] Detect unsupported words
 - [x] Speaker adaptation (In progress)
@@ -128,11 +129,18 @@ rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidSphinxCompletionListene
 // Set the Timeout in miliseconds
 rapidSphinx.startRapidSphinx(10000);
 ```
-- Please look at RapidSphinxDemo for detail.
 
-## Additional Libraries
-- [x] [RapidWave](https://github.com/icaksama/RapidWave)
-- [x] [RapidGram](https://github.com/icaksama/RapidGram)
+## Play Audio Record
+```java
+rapidSphinx.getRapidRecorder().play(new RapidSphinxCompletionListener() {
+    @Override
+    public void rapidSphinxCompletedProcess() {
+        System.out.println("Audio finish!");
+    }
+});
+```
+
+## Note : Please look at RapidSphinxDemo for detail usage.
 
 ## MIT License
 ```

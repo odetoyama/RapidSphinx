@@ -17,12 +17,14 @@ import com.icaksama.rapidsphinx.RapidSphinx;
 import com.icaksama.rapidsphinx.RapidSphinxCompletionListener;
 import com.icaksama.rapidsphinx.RapidSphinxListener;
 
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements RapidSphinxListener {
 
     private RapidSphinx rapidSphinx;
     private Button btnRecognizer;
+    private Button btnStartAudio;
     private Button btnSync;
     private EditText editText;
     private TextView txtResult;
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
         txtStatus = (TextView) findViewById(R.id.txtStatus);
         btnSync = (Button) findViewById(R.id.btnSync);
         btnRecognizer = (Button) findViewById(R.id.btnRecognizer);
+        btnStartAudio = (Button) findViewById(R.id.btnStartAudio);
         txtStatus.setText("Preparing data!");
 
         // Disable buttons for first time
@@ -83,11 +86,27 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
             }
         });
 
+        btnStartAudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    rapidSphinx.getRapidRecorder().play(new RapidSphinxCompletionListener() {
+                        @Override
+                        public void rapidSphinxCompletedProcess() {
+                            System.out.println("Audio finish!");
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        dialog = ProgressDialog.show(MainActivity.this, "",
+                "Preparing data. Please wait...", true);
         rapidSphinx.prepareRapidSphinx(new RapidSphinxCompletionListener() {
             @Override
             public void rapidSphinxCompletedProcess() {
-                dialog = ProgressDialog.show(MainActivity.this, "",
-                        "Loading. Please wait...", true);
                 btnSync.setEnabled(true);
                 btnRecognizer.setEnabled(false);
                 txtStatus.setText("RapidSphinx ready!");

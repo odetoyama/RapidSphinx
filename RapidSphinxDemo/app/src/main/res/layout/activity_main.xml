@@ -32,13 +32,31 @@
             android:layout_marginTop="25dp"
             android:text="Update Language Model" />
 
-        <Button
-            android:id="@+id/btnRecognizer"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:text="Start Recognizer" />
+            android:layout_weight="100"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnRecognizer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_weight="50"
+                android:text="Start Recognizer" />
+
+            <Button
+                android:id="@+id/btnStartAudio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_weight="50"
+                android:text="Play Audio Record" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/txtStatus"
