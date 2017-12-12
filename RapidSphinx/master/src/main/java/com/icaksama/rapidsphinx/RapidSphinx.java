@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,6 +20,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import edu.cmu.pocketsphinx.Assets;
+import edu.cmu.pocketsphinx.Config;
+import edu.cmu.pocketsphinx.Decoder;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.NGramModel;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -33,7 +36,7 @@ import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 public class RapidSphinx implements RecognitionListener {
 
     // Basic Setting
-    private String ARPA_SEARCH_ID = "icaksama";
+    private String SEARCH_ID = "icaksama";
     private RapidRecognizer rapidRecognizer;
     private Context context;
     private String[] words = null;
@@ -46,11 +49,18 @@ public class RapidSphinx implements RecognitionListener {
     private boolean allPhoneCI = false;
     private boolean plWindow = false;
     private boolean lPonlyBeam = false;
+    private boolean fwdflat = false;
+    private boolean bestpath = false;
     private float vadThreshold = (float) 3.0;
+    private float subvq = (float) 0.001;
     private int maxWPF = 5;
     private int maxHMMPF = 3000;
+    private int maxcdsenpf = 2000;
     private long silentToDetect = 0;
     private long timeOutAfterSpeech = 0;
+    private long sampleRate = 16000;
+    private String pbeam = "1e-10";
+
     private List<String> unsupportedWords = new ArrayList<String>();
     private List<Double> scores = new ArrayList<Double>();
 
@@ -64,125 +74,10 @@ public class RapidSphinx implements RecognitionListener {
         }
     }
 
-    public void prepareRapidSphinx(final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
-        if (ContextCompat.checkSelfPermission(this.context,
-                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("Perrmission record not granted!");
-            return;
-        }
-        new AsyncTask<Void, Void, Exception>(){
-            @Override
-            protected void onPreExecute() {
-                System.out.println("Preparing RapidSphinx!");
-            }
-            @Override
-            protected Exception doInBackground(Void... params) {
-                try {
-                    Assets assetsDir = new Assets(context);
-                    File assetDir = assetsDir.syncAssets();
-                    SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
-                    speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
-                    speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
-                    speechRecognizerSetup.setFloat("-samprate", 16000);
-                    speechRecognizerSetup.setFloat("-vad_threshold", vadThreshold);
-//                    config.setBoolean("-allphone_ci", allPhoneCI);
-//                    config.setInt("-maxwpf", maxWPF);
-//                    config.setInt("-maxhmmpf", maxHMMPF);
-//                    config.setInt("-maxcdsenpf", 2000);
-//                    config.setInt("-ds", 3);
-//                    config.setString("-ci_pbeam", "1e-10");
-//                    config.setFloat("-subvq", 0.001);
-//                    config.setBoolean("-fwdflat ", false);
-//                    config.setBoolean("-bestpath", false);
-//                    config.setBoolean("-pl_window", plWindow);
-//                    config.setBoolean("-lponlybeam", lPonlyBeam);
-                    rapidRecognizer = new RapidRecognizer(assetDir, speechRecognizerSetup.getRecognizer().getDecoder().getConfig());
-                    rapidRecognizer.addRapidListener(RapidSphinx.this);
-                    if (rawLogAvailable) {
-                        rapidRecognizer.getRapidDecoder().getConfig().setString("-rawlogdir", assetDir.getPath());
-                    }
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Exception e) {
-                System.out.println("RapidSphinx is ready!");
-                if (rapidSphinxCompletionListener != null) {
-                    rapidSphinxCompletionListener.rapidSphinxCompletedProcess();
-                }
-            }
-        }.execute();
-    }
-
-    public void startRapidSphinx(int timeOut) {
-        if (ContextCompat.checkSelfPermission(this.context,
-                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("Perrmission record not granted!");
-        } else {
-            scores.clear();
-            rapidRecognizer.startRapidListening(ARPA_SEARCH_ID, timeOut);
-        }
-    }
-
-    public void updateVocabulary(final String words, @Nullable final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
-        new AsyncTask<Void, Void, Exception>(){
-            @Override
-            protected void onPreExecute() {
-                System.out.println("Updating vocabulary!");
-            }
-            @Override
-            protected Exception doInBackground(Void... params) {
-                generateDictonary(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
-                generateNGramModel(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Exception e) {
-                System.out.println("Vocabulary updated!");
-                if (rapidSphinxCompletionListener != null) {
-                    rapidSphinxCompletionListener.rapidSphinxCompletedProcess();
-                }
-                if (rapidSphinxListener != null) {
-                    rapidSphinxListener.rapidSphinxUnsupportedWords(unsupportedWords);
-                }
-            }
-        }.execute();
-    }
-
-
-    public void updateVocabulary(final String[] words, @Nullable final RapidSphinxCompletionListener rapidSphinxCompletionListener) {
-        new AsyncTask<Void, Void, Exception>() {
-            @Override
-            protected void onPreExecute() {
-                System.out.println("Updating vocabulary!");
-            }
-            @Override
-            protected Exception doInBackground(Void... params) {
-                RapidSphinx.this.words = new HashSet<String>(Arrays.asList(words)).toArray(new String[0]);
-                generateDictonary(RapidSphinx.this.words);
-                generateNGramModel(RapidSphinx.this.words);
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Exception e) {
-                System.out.println("Vocabulary updated!");
-                if (rapidSphinxCompletionListener != null) {
-                    rapidSphinxCompletionListener.rapidSphinxCompletedProcess();
-                }
-                if (rapidSphinxListener != null) {
-                    rapidSphinxListener.rapidSphinxUnsupportedWords(unsupportedWords);
-                }
-            }
-        }.execute();
-    }
-
     private void generateDictonary(String[] words) {
         unsupportedWords.clear();
         try {
-            File fileOut = new File(assetDir, "arpas/" + ARPA_SEARCH_ID + ".dict");
+            File fileOut = new File(assetDir, "arpas/" + SEARCH_ID + ".dict");
             File fullDic = new File(assetDir, "cmudict-en-us.dict");
             rapidRecognizer.getRapidDecoder().loadDict(fullDic.getPath(), null, "dict");
             if (fileOut.exists()){
@@ -209,8 +104,8 @@ public class RapidSphinx implements RecognitionListener {
     }
 
     private void generateNGramModel(String[] words) {
-        File oldFile = new File(assetDir, ARPA_SEARCH_ID + ".arpa");
-        File newFile = new File(assetDir, "arpas/"+ ARPA_SEARCH_ID +"-new.arpa");
+        File oldFile = new File(assetDir, SEARCH_ID + ".arpa");
+        File newFile = new File(assetDir, "arpas/"+ SEARCH_ID +"-new.arpa");
         try {
             if (newFile.exists()) {
                 newFile.delete();
@@ -225,7 +120,286 @@ public class RapidSphinx implements RecognitionListener {
         for (String word: words) {
             nGramModel.addWord(word, 2);
         }
-        rapidRecognizer.getRapidDecoder().setLm(ARPA_SEARCH_ID, nGramModel);
+        rapidRecognizer.getRapidDecoder().setLm(SEARCH_ID, nGramModel);
+    }
+
+    public void prepareRapidSphinx(final RapidPreparationListener rapidPreparationListener) {
+        if (ContextCompat.checkSelfPermission(this.context,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Perrmission record not granted!");
+            return;
+        }
+        new AsyncTask<Void, Void, Exception>(){
+            @Override
+            protected void onPreExecute() {
+                System.out.println("Preparing RapidSphinx!");
+            }
+            @Override
+            protected Exception doInBackground(Void... params) {
+                try {
+                    Assets assetsDir = new Assets(context);
+                    File assetDir = assetsDir.syncAssets();
+                    SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
+                    speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
+                    speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
+                    Config config = speechRecognizerSetup.getRecognizer().getDecoder().getConfig();
+                    config.setFloat("-samprate", sampleRate);
+                    config.setFloat("-vad_threshold", vadThreshold);
+                    config.setFloat("-subvq", subvq);
+                    config.setInt("-maxwpf", maxWPF);
+                    config.setInt("-maxhmmpf", maxHMMPF);
+                    config.setInt("-maxcdsenpf", maxcdsenpf);
+                    config.setString("-ci_pbeam", pbeam);
+                    config.setBoolean("-allphone_ci", allPhoneCI);
+                    config.setBoolean("-fwdflat ", fwdflat);
+                    config.setBoolean("-bestpath", bestpath);
+                    config.setBoolean("-pl_window", plWindow);
+                    config.setBoolean("-lponlybeam", lPonlyBeam);
+                    rapidPreparationListener.rapidPreExecute(config);
+                    if (rawLogAvailable) {
+                        config.setString("-rawlogdir", assetDir.getPath());
+                    }
+                    rapidRecognizer = new RapidRecognizer(assetDir, config);
+                    rapidRecognizer.addRapidListener(RapidSphinx.this);
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                    rapidPreparationListener.rapidPostExecute(false);
+                }
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Exception e) {
+                System.out.println("RapidSphinx is ready!");
+                if (rapidPreparationListener != null) {
+                    rapidPreparationListener.rapidPostExecute(true);
+                }
+            }
+        }.execute();
+    }
+
+    public void prepareRapidSphinx(final File gramOrLM, @Nullable final File dictionary, final RapidPreparationListener rapidPreparationListener) {
+        if (ContextCompat.checkSelfPermission(this.context,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Perrmission record not granted!");
+            return;
+        }
+        new AsyncTask<Void, Void, Exception>(){
+            @Override
+            protected void onPreExecute() {
+                System.out.println("Preparing RapidSphinx!");
+            }
+            @Override
+            protected Exception doInBackground(Void... params) {
+                try {
+                    Assets assetsDir = new Assets(context);
+                    File assetDir = assetsDir.syncAssets();
+                    SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
+                    speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
+                    speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
+                    Config config = speechRecognizerSetup.getRecognizer().getDecoder().getConfig();
+                    config.setFloat("-samprate", sampleRate);
+                    config.setFloat("-vad_threshold", vadThreshold);
+                    config.setFloat("-subvq", subvq);
+                    config.setInt("-maxwpf", maxWPF);
+                    config.setInt("-maxhmmpf", maxHMMPF);
+                    config.setInt("-maxcdsenpf", maxcdsenpf);
+                    config.setString("-ci_pbeam", pbeam);
+                    config.setBoolean("-allphone_ci", allPhoneCI);
+                    config.setBoolean("-fwdflat ", fwdflat);
+                    config.setBoolean("-bestpath", bestpath);
+                    config.setBoolean("-pl_window", plWindow);
+                    config.setBoolean("-lponlybeam", lPonlyBeam);
+                    rapidPreparationListener.rapidPreExecute(config);
+                    if (rawLogAvailable) {
+                        config.setString("-rawlogdir", assetDir.getPath());
+                    }
+                    if (gramOrLM.isFile()) {
+                        if (gramOrLM.getPath().endsWith(".gram")) {
+                            speechRecognizerSetup.setString("-jsgf", gramOrLM.getPath());
+                        } else if (gramOrLM.getPath().endsWith(".arpa") ||
+                                gramOrLM.getPath().endsWith(".lm") ||
+                                gramOrLM.getPath().endsWith(".bin")||
+                                gramOrLM.getPath().endsWith(".dmp")) {
+                            speechRecognizerSetup.setString("-lm", gramOrLM.getPath());
+                        } else {
+                            Log.e("RapidSphinx", gramOrLM.getPath() + " is not a language model file.");
+                        }
+                    } else {
+                        Log.e("RapidSphinx", gramOrLM.getPath() + " is not a file.");
+                    }
+                    rapidRecognizer = new RapidRecognizer(assetDir, config);
+                    rapidRecognizer.addRapidListener(RapidSphinx.this);
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                    rapidPreparationListener.rapidPostExecute(false);
+                }
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Exception e) {
+                System.out.println("RapidSphinx is ready!");
+                if (rapidPreparationListener != null) {
+                    rapidPreparationListener.rapidPostExecute(true);
+                }
+            }
+        }.execute();
+    }
+
+    public void startRapidSphinx(int timeOut) {
+        if (ContextCompat.checkSelfPermission(this.context,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Perrmission record not granted!");
+        } else {
+            scores.clear();
+            rapidRecognizer.startRapidListening(SEARCH_ID, timeOut);
+        }
+    }
+
+    public void updateVocabulary(final String words, @Nullable final RapidCompletionListener rapidCompletionListener) {
+        new AsyncTask<Void, Void, Exception>(){
+            @Override
+            protected void onPreExecute() {
+                System.out.println("Updating vocabulary!");
+            }
+            @Override
+            protected Exception doInBackground(Void... params) {
+                generateDictonary(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
+                generateNGramModel(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Exception e) {
+                System.out.println("Vocabulary updated!");
+                if (rapidCompletionListener != null) {
+                    rapidCompletionListener.rapidCompletedProcess();
+                }
+                if (rapidSphinxListener != null) {
+                    rapidSphinxListener.rapidSphinxUnsupportedWords(unsupportedWords);
+                }
+            }
+        }.execute();
+    }
+
+    public void updateVocabulary(final String[] words, @Nullable final RapidCompletionListener rapidCompletionListener) {
+        new AsyncTask<Void, Void, Exception>() {
+            @Override
+            protected void onPreExecute() {
+                System.out.println("Updating vocabulary!");
+            }
+            @Override
+            protected Exception doInBackground(Void... params) {
+                RapidSphinx.this.words = new HashSet<String>(Arrays.asList(words)).toArray(new String[0]);
+                generateDictonary(RapidSphinx.this.words);
+                generateNGramModel(RapidSphinx.this.words);
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Exception e) {
+                System.out.println("Vocabulary updated!");
+                if (rapidCompletionListener != null) {
+                    rapidCompletionListener.rapidCompletedProcess();
+                }
+                if (rapidSphinxListener != null) {
+                    rapidSphinxListener.rapidSphinxUnsupportedWords(unsupportedWords);
+                }
+            }
+        }.execute();
+    }
+
+    public void updateGrammar(final String grammarStr, @Nullable final File dictionary, @Nullable final RapidCompletionListener rapidCompletionListener) {
+        new AsyncTask<Void, Void, Exception>() {
+            @Override
+            protected void onPreExecute() {
+                System.out.println("Updating vocabulary!");
+            }
+            @Override
+            protected Exception doInBackground(Void... params) {
+                if (dictionary != null) {
+                    if (dictionary.isFile()) {
+                        rapidRecognizer.getRapidDecoder().loadDict(dictionary.getPath(), null, "dict");
+                    } else {
+                        Log.e("RapidSphinx", dictionary.getPath() + " is not a dictionary file");
+                    }
+                }
+                rapidRecognizer.getRapidDecoder().setJsgfString(SEARCH_ID, grammarStr);
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Exception e) {
+                System.out.println("Vocabulary updated!");
+                if (rapidCompletionListener != null) {
+                    rapidCompletionListener.rapidCompletedProcess();
+                }
+            }
+        }.execute();
+    }
+
+    public void updateGrammar(final File jsgf, @Nullable final File dictionary, @Nullable final RapidCompletionListener rapidCompletionListener) {
+        if (jsgf.isFile()) {
+            new AsyncTask<Void, Void, Exception>() {
+                @Override
+                protected void onPreExecute() {
+                    System.out.println("Updating vocabulary!");
+                }
+                @Override
+                protected Exception doInBackground(Void... params) {
+                    if (dictionary != null) {
+                        if (dictionary.isFile()) {
+                            rapidRecognizer.getRapidDecoder().loadDict(dictionary.getPath(), null, "dict");
+                        } else {
+                            Log.e("RapidSphinx", dictionary.getPath() + " is not a dictionary file");
+                        }
+                    }
+                    rapidRecognizer.getRapidDecoder().setJsgfFile(SEARCH_ID, jsgf.getPath());
+                    return null;
+                }
+                @Override
+                protected void onPostExecute(Exception e) {
+                    System.out.println("Vocabulary updated!");
+                    if (rapidCompletionListener != null) {
+                        rapidCompletionListener.rapidCompletedProcess();
+                    }
+                }
+            }.execute();
+        } else {
+            Log.e("RapidSphinx", jsgf.getPath() + " is not a grammar file");
+        }
+    }
+
+    public void updateLmFile(final File lmFile, @Nullable final File dictionary, @Nullable final RapidCompletionListener rapidCompletionListener) {
+        if (lmFile.isFile()) {
+            new AsyncTask<Void, Void, Exception>() {
+                @Override
+                protected void onPreExecute() {
+                    System.out.println("Updating vocabulary!");
+                }
+                @Override
+                protected Exception doInBackground(Void... params) {
+                    if (dictionary != null) {
+                        if (dictionary.isFile()) {
+                            rapidRecognizer.getRapidDecoder().loadDict(dictionary.getPath(), null, "dict");
+                        } else {
+                            Log.e("RapidSphinx", dictionary.getPath() + " is not a dictionary file");
+                        }
+                    }
+                    rapidRecognizer.getRapidDecoder().setLmFile(SEARCH_ID, lmFile.getPath());
+                    return null;
+                }
+                @Override
+                protected void onPostExecute(Exception e) {
+                    System.out.println("Vocabulary updated!");
+                    if (rapidCompletionListener != null) {
+                        rapidCompletionListener.rapidCompletedProcess();
+                    }
+                }
+            }.execute();
+        } else {
+            Log.e("RapidSphinx", lmFile.getPath() + " is not a language model file");
+        }
+    }
+
+    public Decoder getDecoder() {
+        return rapidRecognizer.getRapidDecoder();
     }
 
     public RapidRecorder getRapidRecorder() {
@@ -241,12 +415,12 @@ public class RapidSphinx implements RecognitionListener {
     }
 
     public File getLanguageModelPath() {
-        File lmFile = new File(assetDir, "arpas/"+ ARPA_SEARCH_ID +"-new.arpa");
+        File lmFile = new File(assetDir, "arpas/"+ SEARCH_ID +"-new.arpa");
         return lmFile;
     }
 
     public File getDictonaryFile() {
-        File dictFile = new File(assetDir, ARPA_SEARCH_ID + ".dict");
+        File dictFile = new File(assetDir, SEARCH_ID + ".dict");
         return dictFile;
     }
 

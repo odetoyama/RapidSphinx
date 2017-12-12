@@ -44,7 +44,7 @@ public class RapidRecorder {
         return audioRecordPath;
     }
 
-    public void play(@Nullable RapidSphinxCompletionListener rapidSphinxCompletionListener) throws IOException {
+    public void play(@Nullable RapidCompletionListener rapidCompletionListener) throws IOException {
         File file = new File(audioRecordPath);
         if (!file.exists())
             return;
@@ -74,8 +74,8 @@ public class RapidRecorder {
             }
             audioTrack.release();
             isPlaying = false;
-            if (rapidSphinxCompletionListener != null) {
-                rapidSphinxCompletionListener.rapidSphinxCompletedProcess();
+            if (rapidCompletionListener != null) {
+                rapidCompletionListener.rapidCompletedProcess();
             }
         } else
             Log.d(TAG, "audio track is not initialised ");

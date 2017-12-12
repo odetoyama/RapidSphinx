@@ -1,10 +1,11 @@
 # RapidSphinx
-Android library for offline speech recognition.
+Android library for offline speech recognition base on Pocketsphinx engine. Add speech recognition feature into your Android app with easier implementations. RapidSphinx gives simple configuration and implementation for your app without dealing with Pocketsphinx assets and configuration. Just add it to your gradle!
 
 ## Features
 - [x] Build dictonary on the fly
 - [x] Build language model on the fly
-- [x] Support PCM Recorder 16bits/mono (wav file)
+- [x] Build JSGF Grammar on the fly
+- [x] Support PCM Recorder 16bits / mono (wav file)
 - [x] Scoring system for every single word (range 0.0 - 10.0)
 - [x] Detect unsupported words
 - [x] Speaker adaptation (In progress)
@@ -105,20 +106,38 @@ public void rapidSphinxDidSpeechDetected() {
 ## Prepare Speech Recognition
 You need to prepare speech recognition before use that:
 ```java
-rapidSphinx.prepareRapidSphinx(new RapidSphinxCompletionListener() {
+rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
     @Override
-    public void rapidSphinxCompletedProcess() {
-        System.out.println("Preparation was done!");
+    public void rapidPreExecute(Config config) {
+        // Add your config here:
+        rapidSphinx.setSilentToDetect(2000);
+        config.setString("-parameter", "value");
+    }
+
+    @Override
+    public void rapidPostExecute(boolean isSuccess) {
+        if (isSuccess) {
+            System.out.println("Preparation was done!");
+        }
     }
 });
 ```
 
-## Update The Vocabulary
+## Update Language Model / Grammar
 You can update the vocabulary on the fly:
 ```java
-rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidSphinxCompletionListener() {
+// Update vocabulary with language model
+rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidCompletionListener() {
     @Override
-    public void rapidSphinxCompletedProcess() {
+    public void rapidCompletedProcess() {
+        System.out.println("Vocabulary updated!");
+    }
+});
+
+// Update vocabulary with JSGF Grammar
+rapidSphinx.updateGrammar("YOUR TEXT HERE!", new File("Dictonary Path"), new RapidCompletionListener() {
+    @Override
+    public void rapidCompletedProcess() {
         System.out.println("Vocabulary updated!");
     }
 });
@@ -132,9 +151,9 @@ rapidSphinx.startRapidSphinx(10000);
 
 ## Play Audio Record
 ```java
-rapidSphinx.getRapidRecorder().play(new RapidSphinxCompletionListener() {
+rapidSphinx.getRapidRecorder().play(new RapidCompletionListener() {
     @Override
-    public void rapidSphinxCompletedProcess() {
+    public void rapidCompletedProcess() {
         System.out.println("Audio finish!");
     }
 });

@@ -13,12 +13,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.icaksama.rapidsphinx.RapidCompletionListener;
+import com.icaksama.rapidsphinx.RapidPreparationListener;
 import com.icaksama.rapidsphinx.RapidSphinx;
-import com.icaksama.rapidsphinx.RapidSphinxCompletionListener;
 import com.icaksama.rapidsphinx.RapidSphinxListener;
 
 import java.io.IOException;
 import java.util.List;
+
+import edu.cmu.pocketsphinx.Config;
 
 public class MainActivity extends AppCompatActivity implements RapidSphinxListener {
 
@@ -40,7 +43,26 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
         setContentView(R.layout.activity_main);
         rapidSphinx = new RapidSphinx(this);
         rapidSphinx.addListener(this);
-        rapidSphinx.setSilentToDetect(2000);
+
+        dialog = ProgressDialog.show(MainActivity.this, "",
+                "Preparing data. Please wait...", true);
+        rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
+            @Override
+            public void rapidPreExecute(Config config) {
+                // Add your config here
+                rapidSphinx.setSilentToDetect(2000);
+                rapidSphinx.setTimeOutAfterSpeech(10000);
+                config.setString("-parameter", "value");
+            }
+
+            @Override
+            public void rapidPostExecute(boolean isSuccess) {
+                btnSync.setEnabled(true);
+                btnRecognizer.setEnabled(false);
+                txtStatus.setText("RapidSphinx ready!");
+                dialog.dismiss();
+            }
+        });
 
         this.requestPermissions();
 
@@ -64,9 +86,9 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 dialog.show();
 //                btnSync.setEnabled(false);
                 btnRecognizer.setEnabled(false);
-                rapidSphinx.updateVocabulary(editText.getText().toString(), new RapidSphinxCompletionListener() {
+                rapidSphinx.updateVocabulary(editText.getText().toString(), new RapidCompletionListener() {
                     @Override
-                    public void rapidSphinxCompletedProcess() {
+                    public void rapidCompletedProcess() {
                         btnRecognizer.setEnabled(true);
                         dialog.dismiss();
                     }
@@ -90,27 +112,15 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
             @Override
             public void onClick(View view) {
                 try {
-                    rapidSphinx.getRapidRecorder().play(new RapidSphinxCompletionListener() {
+                    rapidSphinx.getRapidRecorder().play(new RapidCompletionListener() {
                         @Override
-                        public void rapidSphinxCompletedProcess() {
+                        public void rapidCompletedProcess() {
                             System.out.println("Audio finish!");
                         }
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-        });
-
-        dialog = ProgressDialog.show(MainActivity.this, "",
-                "Preparing data. Please wait...", true);
-        rapidSphinx.prepareRapidSphinx(new RapidSphinxCompletionListener() {
-            @Override
-            public void rapidSphinxCompletedProcess() {
-                btnSync.setEnabled(true);
-                btnRecognizer.setEnabled(false);
-                txtStatus.setText("RapidSphinx ready!");
-                dialog.dismiss();
             }
         });
     }

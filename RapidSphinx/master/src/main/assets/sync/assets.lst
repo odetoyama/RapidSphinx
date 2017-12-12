@@ -1,3 +1,5 @@
+arctic20.fileids
+arctic20.transcription
 arpas/9414.lm
 cmudict-en-us.dict
 en-us-ptm/README
@@ -9,3 +11,4 @@ en-us-ptm/sendump
 en-us-ptm/transition_matrices
 en-us-ptm/variances
 icaksama.arpa
+icaksama_rapidsphinx.wav
