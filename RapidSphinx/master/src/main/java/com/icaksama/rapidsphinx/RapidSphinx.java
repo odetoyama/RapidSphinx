@@ -84,8 +84,8 @@ public class RapidSphinx implements RecognitionListener {
                     speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
                     speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
                     speechRecognizerSetup.setFloat("-samprate", 16000);
+                    speechRecognizerSetup.setFloat("-vad_threshold", vadThreshold);
 //                    config.setBoolean("-allphone_ci", allPhoneCI);
-//                    config.setFloat("-vad_threshold", vadThreshold);
 //                    config.setInt("-maxwpf", maxWPF);
 //                    config.setInt("-maxhmmpf", maxHMMPF);
 //                    config.setInt("-maxcdsenpf", 2000);
@@ -318,6 +318,15 @@ public class RapidSphinx implements RecognitionListener {
         this.timeOutAfterSpeech = timeOutAfterSpeech;
     }
 
+    public void stop() {
+        rapidRecognizer.stopRapid();
+        rapidRecognizer.shutdownRapid();
+    }
+
+    public SegmentIterator getSegmentIterator() {
+        return rapidRecognizer.getRapidDecoder().seg().iterator();
+    }
+
     @Override
     public void onBeginningOfSpeech() {
         if (rapidSphinxListener != null) {
@@ -351,7 +360,7 @@ public class RapidSphinx implements RecognitionListener {
 
     @Override
     public void onResult(Hypothesis hypothesis) {
-        if (rapidSphinxListener != null) {
+        if (hypothesis != null) {
             SegmentIterator segmentIterator = rapidRecognizer.getRapidDecoder().seg().iterator();
             while (segmentIterator.hasNext()) {
                 Segment segment = segmentIterator.next();
