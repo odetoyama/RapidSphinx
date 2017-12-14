@@ -45,14 +45,14 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
         rapidSphinx.addListener(this);
         this.requestPermissions();
 
+        dialog = ProgressDialog.show(MainActivity.this, "",
+                "Preparing data. Please wait...", true);
         rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
             @Override
             public void rapidPreExecute(Config config) {
                 // Add your config here
                 rapidSphinx.setSilentToDetect(2000);
                 rapidSphinx.setTimeOutAfterSpeech(10000);
-                dialog = ProgressDialog.show(MainActivity.this, "",
-                        "Preparing data. Please wait...", true);
 //                config.setString("parameter", "value");
             }
 
@@ -111,12 +111,14 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
             @Override
             public void onClick(View view) {
                 try {
-                    rapidSphinx.getRapidRecorder().play(new RapidCompletionListener() {
-                        @Override
-                        public void rapidCompletedProcess() {
-                            System.out.println("Audio finish!");
-                        }
-                    });
+                    if (rapidSphinx.getRapidRecorder() != null) {
+                        rapidSphinx.getRapidRecorder().play(new RapidCompletionListener() {
+                            @Override
+                            public void rapidCompletedProcess() {
+                                System.out.println("Audio finish!");
+                            }
+                        });
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
