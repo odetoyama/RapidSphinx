@@ -27,9 +27,7 @@ public class RapidRecorder {
     private AudioTrack audioTrack;
 
     protected RapidRecorder(File assetDir, int rate) {
-        if (rate <= 0) {
-            SAMPLE_RATE = rate;
-        }
+        this.SAMPLE_RATE = rate;
         this.audioRecordDirectory = assetDir;
         this.audioRecordPath = audioRecordDirectory.getPath() + File.separator + AUDIO_NAME + ".wav";
         if (!audioRecordDirectory.exists()) {

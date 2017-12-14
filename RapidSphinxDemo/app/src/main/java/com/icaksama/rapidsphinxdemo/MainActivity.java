@@ -43,16 +43,17 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
         setContentView(R.layout.activity_main);
         rapidSphinx = new RapidSphinx(this);
         rapidSphinx.addListener(this);
+        this.requestPermissions();
 
-        dialog = ProgressDialog.show(MainActivity.this, "",
-                "Preparing data. Please wait...", true);
         rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
             @Override
             public void rapidPreExecute(Config config) {
                 // Add your config here
                 rapidSphinx.setSilentToDetect(2000);
                 rapidSphinx.setTimeOutAfterSpeech(10000);
-                config.setString("-parameter", "value");
+                dialog = ProgressDialog.show(MainActivity.this, "",
+                        "Preparing data. Please wait...", true);
+//                config.setString("parameter", "value");
             }
 
             @Override
@@ -63,8 +64,6 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 dialog.dismiss();
             }
         });
-
-        this.requestPermissions();
 
         editText = (EditText) findViewById(R.id.editText);
         txtResult = (TextView) findViewById(R.id.txtResult);

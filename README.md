@@ -9,7 +9,7 @@ Android library for offline speech recognition base on Pocketsphinx engine. Add 
 - [x] Scoring system for every single word (range 0.0 - 10.0)
 - [x] Detect unsupported words
 - [x] Speaker adaptation (In progress)
-- [x] SIMPLE TO USE!
+- [x] SIMPLE TO USE & FAST!
 
 ## Preview
 I have tried to speak in different word order:

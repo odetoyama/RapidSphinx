@@ -38,6 +38,7 @@ public class RapidSphinx implements RecognitionListener {
     // Basic Setting
     private String SEARCH_ID = "icaksama";
     private RapidRecognizer rapidRecognizer;
+    private RapidRecognizer rapidRecognizerTemp;
     private Context context;
     private String[] words = null;
     private Utilities util = new Utilities();
@@ -47,7 +48,7 @@ public class RapidSphinx implements RecognitionListener {
     // Additional Setting
     private boolean rawLogAvailable = false;
     private boolean allPhoneCI = false;
-    private boolean plWindow = false;
+    private boolean plWindow = true;
     private boolean lPonlyBeam = false;
     private boolean fwdflat = false;
     private boolean bestpath = false;
@@ -63,6 +64,8 @@ public class RapidSphinx implements RecognitionListener {
 
     private List<String> unsupportedWords = new ArrayList<String>();
     private List<Double> scores = new ArrayList<Double>();
+    private Config config = null;
+    private NGramModel nGramModel = null;
 
     public RapidSphinx(Context context) {
         this.context = context;
@@ -77,16 +80,13 @@ public class RapidSphinx implements RecognitionListener {
     private void generateDictonary(String[] words) {
         unsupportedWords.clear();
         try {
-            File fileOut = new File(assetDir, "arpas/" + SEARCH_ID + ".dict");
-            File fullDic = new File(assetDir, "cmudict-en-us.dict");
-            rapidRecognizer.getRapidDecoder().loadDict(fullDic.getPath(), null, "dict");
+            File fileOut = new File(assetDir, "arpas/"+ SEARCH_ID +".dict");
             if (fileOut.exists()){
                 fileOut.delete();
             }
-            System.out.println("Words " + words.length);
             FileOutputStream outputStream = new FileOutputStream(fileOut);
             for (String word: words) {
-                String pronoun = rapidRecognizer.getRapidDecoder().lookupWord(word);
+                String pronoun = rapidRecognizerTemp.getRapidDecoder().lookupWord(word);
                 if (pronoun != null) {
                     String wordN = word + " ";
                     outputStream.write(wordN.toLowerCase(Locale.ENGLISH).getBytes(Charset.forName("UTF-8")));
@@ -103,7 +103,11 @@ public class RapidSphinx implements RecognitionListener {
         }
     }
 
-    private void generateNGramModel(String[] words) {
+    private void generateNGramModel(final String[] words) {
+        if (nGramModel != null) {
+            rapidRecognizer.getRapidDecoder().getLm(SEARCH_ID).delete();
+            rapidRecognizer.getRapidDecoder().unsetSearch(SEARCH_ID);
+        }
         File oldFile = new File(assetDir, SEARCH_ID + ".arpa");
         File newFile = new File(assetDir, "arpas/"+ SEARCH_ID +"-new.arpa");
         try {
@@ -114,11 +118,10 @@ public class RapidSphinx implements RecognitionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        NGramModel nGramModel = new NGramModel(rapidRecognizer.getRapidDecoder().getConfig(),
+        nGramModel = new NGramModel(rapidRecognizer.getRapidDecoder().getConfig(),
                 rapidRecognizer.getRapidDecoder().getLogmath(), newFile.getPath());
-        nGramModel.prob(words);
         for (String word: words) {
-            nGramModel.addWord(word, 2);
+            nGramModel.addWord(word.toLowerCase(Locale.ENGLISH), 1.7f);
         }
         rapidRecognizer.getRapidDecoder().setLm(SEARCH_ID, nGramModel);
     }
@@ -142,25 +145,29 @@ public class RapidSphinx implements RecognitionListener {
                     SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
                     speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
                     speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
-                    Config config = speechRecognizerSetup.getRecognizer().getDecoder().getConfig();
+                    config = speechRecognizerSetup.getRecognizer().getDecoder().getConfig();
                     config.setFloat("-samprate", sampleRate);
                     config.setFloat("-vad_threshold", vadThreshold);
-                    config.setFloat("-subvq", subvq);
-                    config.setInt("-maxwpf", maxWPF);
-                    config.setInt("-maxhmmpf", maxHMMPF);
-                    config.setInt("-maxcdsenpf", maxcdsenpf);
-                    config.setString("-ci_pbeam", pbeam);
-                    config.setBoolean("-allphone_ci", allPhoneCI);
-                    config.setBoolean("-fwdflat ", fwdflat);
-                    config.setBoolean("-bestpath", bestpath);
-                    config.setBoolean("-pl_window", plWindow);
-                    config.setBoolean("-lponlybeam", lPonlyBeam);
+                    config.setFloat("-lw", 6.5);
+//                    config.setBoolean("-remove_noise", true);
+//                    config.setFloat("-subvq", subvq);
+//                    config.setInt("-maxwpf", maxWPF);
+//                    config.setInt("-maxhmmpf", maxHMMPF);
+//                    config.setInt("-maxcdsenpf", maxcdsenpf);
+//                    config.setString("-ci_pbeam", pbeam);
+//                    config.setBoolean("-allphone_ci", allPhoneCI);
+//                    config.setBoolean("-fwdflat ", fwdflat);
+//                    config.setBoolean("-bestpath", bestpath);
+//                    config.setBoolean("-pl_window", plWindow);
+//                    config.setBoolean("-lponlybeam", lPonlyBeam);
                     rapidPreparationListener.rapidPreExecute(config);
                     if (rawLogAvailable) {
                         config.setString("-rawlogdir", assetDir.getPath());
                     }
                     rapidRecognizer = new RapidRecognizer(assetDir, config);
+                    rapidRecognizerTemp = new RapidRecognizer(assetDir, config);
                     rapidRecognizer.addRapidListener(RapidSphinx.this);
+//                    rapidRecognizer.getRapidDecoder().setLmFile(SEARCH_ID, new File(assetDir, SEARCH_ID + ".arpa").getPath());
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                     rapidPreparationListener.rapidPostExecute(false);
@@ -196,19 +203,21 @@ public class RapidSphinx implements RecognitionListener {
                     SpeechRecognizerSetup speechRecognizerSetup = SpeechRecognizerSetup.defaultSetup();
                     speechRecognizerSetup.setAcousticModel(new File(assetDir, "en-us-ptm"));
                     speechRecognizerSetup.setDictionary(new File(assetDir, "cmudict-en-us.dict"));
-                    Config config = speechRecognizerSetup.getRecognizer().getDecoder().getConfig();
+                    config = speechRecognizerSetup.getRecognizer().getDecoder().getConfig();
                     config.setFloat("-samprate", sampleRate);
                     config.setFloat("-vad_threshold", vadThreshold);
-                    config.setFloat("-subvq", subvq);
-                    config.setInt("-maxwpf", maxWPF);
-                    config.setInt("-maxhmmpf", maxHMMPF);
-                    config.setInt("-maxcdsenpf", maxcdsenpf);
-                    config.setString("-ci_pbeam", pbeam);
-                    config.setBoolean("-allphone_ci", allPhoneCI);
-                    config.setBoolean("-fwdflat ", fwdflat);
-                    config.setBoolean("-bestpath", bestpath);
-                    config.setBoolean("-pl_window", plWindow);
-                    config.setBoolean("-lponlybeam", lPonlyBeam);
+                    config.setFloat("-lw", 6.5);
+//                    config.setFloat("-vad_threshold", vadThreshold);
+//                    config.setFloat("-subvq", subvq);
+//                    config.setInt("-maxwpf", maxWPF);
+//                    config.setInt("-maxhmmpf", maxHMMPF);
+//                    config.setInt("-maxcdsenpf", maxcdsenpf);
+//                    config.setString("-ci_pbeam", pbeam);
+//                    config.setBoolean("-allphone_ci", allPhoneCI);
+//                    config.setBoolean("-fwdflat ", fwdflat);
+//                    config.setBoolean("-bestpath", bestpath);
+//                    config.setBoolean("-pl_window", plWindow);
+//                    config.setBoolean("-lponlybeam", lPonlyBeam);
                     rapidPreparationListener.rapidPreExecute(config);
                     if (rawLogAvailable) {
                         config.setString("-rawlogdir", assetDir.getPath());
@@ -228,6 +237,7 @@ public class RapidSphinx implements RecognitionListener {
                         Log.e("RapidSphinx", gramOrLM.getPath() + " is not a file.");
                     }
                     rapidRecognizer = new RapidRecognizer(assetDir, config);
+                    rapidRecognizerTemp = new RapidRecognizer(assetDir, config);
                     rapidRecognizer.addRapidListener(RapidSphinx.this);
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
@@ -420,7 +430,7 @@ public class RapidSphinx implements RecognitionListener {
     }
 
     public File getDictonaryFile() {
-        File dictFile = new File(assetDir, SEARCH_ID + ".dict");
+        File dictFile = new File(assetDir,  "arpas/"+ SEARCH_ID +".dict");
         return dictFile;
     }
 
@@ -517,7 +527,7 @@ public class RapidSphinx implements RecognitionListener {
                 e.printStackTrace();
             }
         }
-        rapidRecognizer.stopRapid();
+        stop();
         if (rapidSphinxListener != null) {
             rapidSphinxListener.rapidSphinxDidStop("End of Speech!", 200);
         }
@@ -551,7 +561,7 @@ public class RapidSphinx implements RecognitionListener {
 
     @Override
     public void onError(Exception e) {
-        rapidRecognizer.stopRapid();
+        stop();
         if (rapidSphinxListener != null) {
             rapidSphinxListener.rapidSphinxDidStop(e.getMessage(), 500);
         }
@@ -559,7 +569,7 @@ public class RapidSphinx implements RecognitionListener {
 
     @Override
     public void onTimeout() {
-        rapidRecognizer.stopRapid();
+        stop();
         if (rapidSphinxListener != null) {
             rapidSphinxListener.rapidSphinxDidStop("Speech timed out!", 522);
         }
