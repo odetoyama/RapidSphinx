@@ -63,6 +63,7 @@ public class RapidSphinx implements RecognitionListener {
     private String pbeam = "1e-10";
 
     private List<String> unsupportedWords = new ArrayList<String>();
+    private List<String> hypArr = new ArrayList<String>();
     private List<Double> scores = new ArrayList<Double>();
     private Config config = null;
     private NGramModel nGramModel = null;
@@ -261,6 +262,7 @@ public class RapidSphinx implements RecognitionListener {
             System.out.println("Perrmission record not granted!");
         } else {
             scores.clear();
+            hypArr.clear();
             rapidRecognizer.startRapidListening(SEARCH_ID, timeOut);
         }
     }
@@ -549,12 +551,14 @@ public class RapidSphinx implements RecognitionListener {
             while (segmentIterator.hasNext()) {
                 Segment segment = segmentIterator.next();
                 double score =  rapidRecognizer.getRapidDecoder().getLogmath().exp(segment.getProb());
-                if (!segment.getWord().contains("<") && !segment.getWord().contains(">")) {
+                if (!segment.getWord().contains("<") && !segment.getWord().contains(">") &&
+                        !segment.getWord().contains("[") && !segment.getWord().contains("]")) {
                     scores.add(score);
+                    hypArr.add(segment.getWord());
                 }
             }
             if (rapidSphinxListener != null) {
-                rapidSphinxListener.rapidSphinxFinalResult(hypothesis.getHypstr(), scores);
+                rapidSphinxListener.rapidSphinxFinalResult(hypothesis.getHypstr(), hypArr, scores);
             }
         }
     }

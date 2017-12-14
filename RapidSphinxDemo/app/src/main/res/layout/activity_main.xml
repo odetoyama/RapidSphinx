@@ -17,13 +17,22 @@
         android:padding="20dp">
 
         <EditText
-            android:id="@+id/editText"
+            android:id="@+id/txtWords"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="75dp"
+            android:layout_marginTop="25dp"
             android:ems="10"
-            android:inputType="text"
-            android:text="this is ana" />
+            android:hint="Words"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/txtDistractor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ems="10"
+            android:hint="Words Distractor"
+            android:inputType="textPersonName" />
 
         <Button
             android:id="@+id/btnSync"

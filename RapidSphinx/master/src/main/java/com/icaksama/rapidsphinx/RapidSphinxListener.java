@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface RapidSphinxListener {
     void rapidSphinxDidStop(String reason, int code);
-    void rapidSphinxFinalResult(String result, List<Double> scores);
+    void rapidSphinxFinalResult(String result, List<String> hypArr, List<Double> scores);
     void rapidSphinxPartialResult(String partialResult);
     void rapidSphinxUnsupportedWords(List<String> words);
     void rapidSphinxDidSpeechDetected();

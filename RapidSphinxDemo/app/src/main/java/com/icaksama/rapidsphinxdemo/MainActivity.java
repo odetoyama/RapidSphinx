@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,6 +20,7 @@ import com.icaksama.rapidsphinx.RapidSphinx;
 import com.icaksama.rapidsphinx.RapidSphinxListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.cmu.pocketsphinx.Config;
@@ -29,13 +31,16 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
     private Button btnRecognizer;
     private Button btnStartAudio;
     private Button btnSync;
-    private EditText editText;
+    private EditText txtWords;
+    private EditText txtDistractor;
     private TextView txtResult;
     private TextView txtStatus;
     private TextView txtPartialResult;
     private TextView txtUnsupported;
 
     private ProgressDialog dialog = null;
+
+    private List<String> finalHyp = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
             }
         });
 
-        editText = (EditText) findViewById(R.id.editText);
+        txtWords = (EditText) findViewById(R.id.txtWords);
+        txtDistractor = (EditText) findViewById(R.id.txtDistractor);
         txtResult = (TextView) findViewById(R.id.txtResult);
         txtPartialResult = (TextView) findViewById(R.id.txtPartialResult);
         txtUnsupported = (TextView) findViewById(R.id.txtUnsuported);
@@ -85,7 +91,13 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 dialog.show();
 //                btnSync.setEnabled(false);
                 btnRecognizer.setEnabled(false);
-                rapidSphinx.updateVocabulary(editText.getText().toString(), new RapidCompletionListener() {
+                String words = "";
+                if (!txtDistractor.getText().toString().isEmpty()) {
+                    words = txtWords.getText().toString().trim() + " " + txtDistractor.getText().toString().trim();
+                } else {
+                    words = txtWords.getText().toString();
+                }
+                rapidSphinx.updateVocabulary(words, new RapidCompletionListener() {
                     @Override
                     public void rapidCompletedProcess() {
                         btnRecognizer.setEnabled(true);
@@ -150,9 +162,8 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
     }
 
     @Override
-    public void rapidSphinxFinalResult(String result, List<Double> scores) {
-        txtResult.setText(result);
-        if (result.equalsIgnoreCase(editText.getText().toString())) {
+    public void rapidSphinxFinalResult(String result, List<String> hypArr, List<Double> scores) {
+        if (result.equalsIgnoreCase(txtWords.getText().toString())) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 txtResult.setTextColor(getResources().getColor(android.R.color.holo_green_light, null));
             } else {
@@ -165,6 +176,19 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 txtResult.setTextColor(getResources().getColor(android.R.color.holo_red_light));
             }
         }
+        for (int i = 0; i < hypArr.size(); i++) {
+            Log.i("Demo", "Words : " + hypArr.get(i) + ", Point : " + scores.get(i));
+            if (i < hypArr.size()) {
+//                    if (correctAnswer[i].equalsIgnoreCase(hypArr.get(i))) {
+//
+//                    } else {
+//
+//                    }
+            } else {
+
+            }
+        }
+        txtResult.setText(result);
     }
 
     @Override
