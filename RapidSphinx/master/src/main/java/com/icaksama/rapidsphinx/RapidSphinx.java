@@ -551,10 +551,20 @@ public class RapidSphinx implements RecognitionListener {
             while (segmentIterator.hasNext()) {
                 Segment segment = segmentIterator.next();
                 double score =  rapidRecognizer.getRapidDecoder().getLogmath().exp(segment.getProb());
+//                if (segment.getWord().equalsIgnoreCase("[SPEECH]")) {
+//                    scores.add(score);
+//                    hypArr.add("?");
+//
+//                }
                 if (!segment.getWord().contains("<") && !segment.getWord().contains(">") &&
                         !segment.getWord().contains("[") && !segment.getWord().contains("]")) {
-                    scores.add(score);
-                    hypArr.add(segment.getWord());
+                    if (segment.getProb() <= -300) {
+                        scores.add(score);
+                        hypArr.add(segment.getWord());
+                    } else {
+                        scores.add(score);
+                        hypArr.add(segment.getWord());
+                    }
                 }
             }
             if (rapidSphinxListener != null) {

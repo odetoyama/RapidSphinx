@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -58,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 // Add your config here
                 rapidSphinx.setSilentToDetect(2000);
                 rapidSphinx.setTimeOutAfterSpeech(10000);
+                config.setBoolean("-backtrace", true);
+//                config.setFloat("-fillprob", 1.0f);
+//                config.setBoolean("-allphone_ci", true);
 //                config.setString("parameter", "value");
             }
 
@@ -174,18 +176,6 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 txtResult.setTextColor(getResources().getColor(android.R.color.holo_red_light, null));
             } else {
                 txtResult.setTextColor(getResources().getColor(android.R.color.holo_red_light));
-            }
-        }
-        for (int i = 0; i < hypArr.size(); i++) {
-            Log.i("Demo", "Words : " + hypArr.get(i) + ", Point : " + scores.get(i));
-            if (i < hypArr.size()) {
-//                    if (correctAnswer[i].equalsIgnoreCase(hypArr.get(i))) {
-//
-//                    } else {
-//
-//                    }
-            } else {
-
             }
         }
         txtResult.setText(result);
