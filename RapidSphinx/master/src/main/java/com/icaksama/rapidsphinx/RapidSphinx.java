@@ -47,20 +47,10 @@ public class RapidSphinx implements RecognitionListener {
 
     // Additional Setting
     private boolean rawLogAvailable = false;
-    private boolean allPhoneCI = false;
-    private boolean plWindow = true;
-    private boolean lPonlyBeam = false;
-    private boolean fwdflat = false;
-    private boolean bestpath = false;
+    private long sampleRate = 16000;
     private float vadThreshold = (float) 3.0;
-    private float subvq = (float) 0.001;
-    private int maxWPF = 5;
-    private int maxHMMPF = 3000;
-    private int maxcdsenpf = 2000;
     private long silentToDetect = 0;
     private long timeOutAfterSpeech = 0;
-    private long sampleRate = 16000;
-    private String pbeam = "1e-10";
 
     private List<String> unsupportedWords = new ArrayList<String>();
     private List<String> hypArr = new ArrayList<String>();
@@ -150,17 +140,6 @@ public class RapidSphinx implements RecognitionListener {
                     config.setFloat("-samprate", sampleRate);
                     config.setFloat("-vad_threshold", vadThreshold);
                     config.setFloat("-lw", 6.5);
-//                    config.setBoolean("-remove_noise", true);
-//                    config.setFloat("-subvq", subvq);
-//                    config.setInt("-maxwpf", maxWPF);
-//                    config.setInt("-maxhmmpf", maxHMMPF);
-//                    config.setInt("-maxcdsenpf", maxcdsenpf);
-//                    config.setString("-ci_pbeam", pbeam);
-//                    config.setBoolean("-allphone_ci", allPhoneCI);
-//                    config.setBoolean("-fwdflat ", fwdflat);
-//                    config.setBoolean("-bestpath", bestpath);
-//                    config.setBoolean("-pl_window", plWindow);
-//                    config.setBoolean("-lponlybeam", lPonlyBeam);
                     rapidPreparationListener.rapidPreExecute(config);
                     if (rawLogAvailable) {
                         config.setString("-rawlogdir", assetDir.getPath());
@@ -168,7 +147,6 @@ public class RapidSphinx implements RecognitionListener {
                     rapidRecognizer = new RapidRecognizer(assetDir, config);
                     rapidRecognizerTemp = new RapidRecognizer(assetDir, config);
                     rapidRecognizer.addRapidListener(RapidSphinx.this);
-//                    rapidRecognizer.getRapidDecoder().setLmFile(SEARCH_ID, new File(assetDir, SEARCH_ID + ".arpa").getPath());
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                     rapidPreparationListener.rapidPostExecute(false);
@@ -208,17 +186,6 @@ public class RapidSphinx implements RecognitionListener {
                     config.setFloat("-samprate", sampleRate);
                     config.setFloat("-vad_threshold", vadThreshold);
                     config.setFloat("-lw", 6.5);
-//                    config.setFloat("-vad_threshold", vadThreshold);
-//                    config.setFloat("-subvq", subvq);
-//                    config.setInt("-maxwpf", maxWPF);
-//                    config.setInt("-maxhmmpf", maxHMMPF);
-//                    config.setInt("-maxcdsenpf", maxcdsenpf);
-//                    config.setString("-ci_pbeam", pbeam);
-//                    config.setBoolean("-allphone_ci", allPhoneCI);
-//                    config.setBoolean("-fwdflat ", fwdflat);
-//                    config.setBoolean("-bestpath", bestpath);
-//                    config.setBoolean("-pl_window", plWindow);
-//                    config.setBoolean("-lponlybeam", lPonlyBeam);
                     rapidPreparationListener.rapidPreExecute(config);
                     if (rawLogAvailable) {
                         config.setString("-rawlogdir", assetDir.getPath());
@@ -464,38 +431,6 @@ public class RapidSphinx implements RecognitionListener {
         this.silentToDetect = silentToDetect;
     }
 
-    public int getMaxWPF() {
-        return maxWPF;
-    }
-
-    public void setMaxWPF(int maxWPF) {
-        this.maxWPF = maxWPF;
-    }
-
-    public int getMaxHMMPF() {
-        return maxHMMPF;
-    }
-
-    public void setMaxHMMPF(int maxHMMPF) {
-        this.maxHMMPF = maxHMMPF;
-    }
-
-    public boolean isPlWindow() {
-        return plWindow;
-    }
-
-    public void setPlWindow(boolean plWindow) {
-        this.plWindow = plWindow;
-    }
-
-    public boolean islPonlyBeam() {
-        return lPonlyBeam;
-    }
-
-    public void setlPonlyBeam(boolean lPonlyBeam) {
-        this.lPonlyBeam = lPonlyBeam;
-    }
-
     public double getTimeOutAfterSpeech() {
         return timeOutAfterSpeech;
     }
@@ -558,13 +493,8 @@ public class RapidSphinx implements RecognitionListener {
 //                }
                 if (!segment.getWord().contains("<") && !segment.getWord().contains(">") &&
                         !segment.getWord().contains("[") && !segment.getWord().contains("]")) {
-                    if (segment.getProb() <= -300) {
-                        scores.add(score);
-                        hypArr.add(segment.getWord());
-                    } else {
-                        scores.add(score);
-                        hypArr.add(segment.getWord());
-                    }
+                    scores.add(score);
+                    hypArr.add(segment.getWord());
                 }
             }
             if (rapidSphinxListener != null) {

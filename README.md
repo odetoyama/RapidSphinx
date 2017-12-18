@@ -5,7 +5,7 @@ Android library for offline speech recognition base on Pocketsphinx engine. Add 
 - [x] Build dictionary on the fly
 - [x] Build language model (Arpa File) on the fly
 - [x] Build JSGF Grammar on the fly
-- [x] Support PCM Recorder 16bits / mono (wav file)
+- [x] Support PCM Recorder 16bits / mono little endian (wav file)
 - [x] Scoring system for every single word (range 0.0 - 1.0)
 - [x] Detect unsupported words
 - [x] Rejecting Out-Of-Vocabulary (In progress)
@@ -20,7 +20,7 @@ I have tried to speak in different word order:
 ## Gradle
 Add to build.gradle :
 ```groovy
-compile 'com.icaksama.rapidsphinx:master:2.0.7'
+compile 'com.icaksama.rapidsphinx:master:2.0.8'
 ```
 
 # How to Use
@@ -77,12 +77,12 @@ public void rapidSphinxDidStop(String reason, int code) {
 @Override
 public void rapidSphinxFinalResult(String result, List<String> hypArr, List<Double> scores) {
     System.out.println("Full Result : " + result);
-    // Get score each word
+    // Get score from every single word. hypArr length equal with scores length
     for (double score: scores) {
         System.out.println(score);
     }
     
-    // Get each word by array
+    // Get array word
     for (String word: hypArr) {
         System.out.println(word);
     }
