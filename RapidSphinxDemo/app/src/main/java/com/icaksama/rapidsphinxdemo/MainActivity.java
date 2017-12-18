@@ -93,13 +93,8 @@ public class MainActivity extends AppCompatActivity implements RapidSphinxListen
                 dialog.show();
 //                btnSync.setEnabled(false);
                 btnRecognizer.setEnabled(false);
-                String words = "";
-                if (!txtDistractor.getText().toString().isEmpty()) {
-                    words = txtWords.getText().toString().trim() + " " + txtDistractor.getText().toString().trim();
-                } else {
-                    words = txtWords.getText().toString();
-                }
-                rapidSphinx.updateVocabulary(words, new RapidCompletionListener() {
+                rapidSphinx.updateVocabulary(txtWords.getText().toString().trim(),
+                        txtDistractor.getText().toString().trim().split(" "), new RapidCompletionListener() {
                     @Override
                     public void rapidCompletedProcess() {
                         btnRecognizer.setEnabled(true);

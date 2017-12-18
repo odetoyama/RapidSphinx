@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -40,7 +41,7 @@ public class RapidSphinx implements RecognitionListener {
     private RapidRecognizer rapidRecognizer;
     private RapidRecognizer rapidRecognizerTemp;
     private Context context;
-    private String[] words = null;
+//    private String[] words = null;
     private Utilities util = new Utilities();
     private RapidSphinxListener rapidSphinxListener = null;
     private File assetDir = null;
@@ -52,6 +53,9 @@ public class RapidSphinx implements RecognitionListener {
     private long silentToDetect = 0;
     private long timeOutAfterSpeech = 0;
 
+    private List<String> originalWords = new ArrayList<String>();
+    private List<String> oovWords = new ArrayList<String>();
+    private List<String> vocabularies = new ArrayList<String>();
     private List<String> unsupportedWords = new ArrayList<String>();
     private List<String> hypArr = new ArrayList<String>();
     private List<Double> scores = new ArrayList<Double>();
@@ -77,14 +81,14 @@ public class RapidSphinx implements RecognitionListener {
             }
             FileOutputStream outputStream = new FileOutputStream(fileOut);
             for (String word: words) {
-                String pronoun = rapidRecognizerTemp.getRapidDecoder().lookupWord(word);
+                String pronoun = rapidRecognizerTemp.getRapidDecoder().lookupWord(word.trim());
                 if (pronoun != null) {
                     String wordN = word + " ";
                     outputStream.write(wordN.toLowerCase(Locale.ENGLISH).getBytes(Charset.forName("UTF-8")));
                     outputStream.write(pronoun.getBytes(Charset.forName("UTF-8")));
                     outputStream.write(System.getProperty("line.separator").getBytes());
                 } else {
-                    unsupportedWords.add(word);
+                    unsupportedWords.add(word.trim());
                 }
             }
             outputStream.close();
@@ -112,7 +116,7 @@ public class RapidSphinx implements RecognitionListener {
         nGramModel = new NGramModel(rapidRecognizer.getRapidDecoder().getConfig(),
                 rapidRecognizer.getRapidDecoder().getLogmath(), newFile.getPath());
         for (String word: words) {
-            nGramModel.addWord(word.toLowerCase(Locale.ENGLISH), 1.7f);
+            nGramModel.addWord(word.trim().toLowerCase(Locale.ENGLISH), 1.7f);
         }
         rapidRecognizer.getRapidDecoder().setLm(SEARCH_ID, nGramModel);
     }
@@ -140,7 +144,9 @@ public class RapidSphinx implements RecognitionListener {
                     config.setFloat("-samprate", sampleRate);
                     config.setFloat("-vad_threshold", vadThreshold);
                     config.setFloat("-lw", 6.5);
-                    rapidPreparationListener.rapidPreExecute(config);
+                    if (rapidPreparationListener != null) {
+                        rapidPreparationListener.rapidPreExecute(config);
+                    }
                     if (rawLogAvailable) {
                         config.setString("-rawlogdir", assetDir.getPath());
                     }
@@ -149,7 +155,9 @@ public class RapidSphinx implements RecognitionListener {
                     rapidRecognizer.addRapidListener(RapidSphinx.this);
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
-                    rapidPreparationListener.rapidPostExecute(false);
+                    if (rapidPreparationListener != null) {
+                        rapidPreparationListener.rapidPostExecute(false);
+                    }
                 }
                 return null;
             }
@@ -186,7 +194,9 @@ public class RapidSphinx implements RecognitionListener {
                     config.setFloat("-samprate", sampleRate);
                     config.setFloat("-vad_threshold", vadThreshold);
                     config.setFloat("-lw", 6.5);
-                    rapidPreparationListener.rapidPreExecute(config);
+                    if (rapidPreparationListener != null) {
+                        rapidPreparationListener.rapidPreExecute(config);
+                    }
                     if (rawLogAvailable) {
                         config.setString("-rawlogdir", assetDir.getPath());
                     }
@@ -209,7 +219,9 @@ public class RapidSphinx implements RecognitionListener {
                     rapidRecognizer.addRapidListener(RapidSphinx.this);
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
-                    rapidPreparationListener.rapidPostExecute(false);
+                    if (rapidPreparationListener != null) {
+                        rapidPreparationListener.rapidPostExecute(false);
+                    }
                 }
                 return null;
             }
@@ -234,16 +246,23 @@ public class RapidSphinx implements RecognitionListener {
         }
     }
 
-    public void updateVocabulary(final String words, @Nullable final RapidCompletionListener rapidCompletionListener) {
+    public void updateVocabulary(@NonNull final String words, @Nullable final String[] oovWords, @Nullable final RapidCompletionListener rapidCompletionListener) {
         new AsyncTask<Void, Void, Exception>(){
             @Override
             protected void onPreExecute() {
+                RapidSphinx.this.originalWords.clear();
+                RapidSphinx.this.oovWords.clear();
+                RapidSphinx.this.vocabularies.clear();
                 System.out.println("Updating vocabulary!");
             }
             @Override
             protected Exception doInBackground(Void... params) {
-                generateDictonary(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
-                generateNGramModel(new HashSet<String>(Arrays.asList(words.split(" "))).toArray(new String[0]));
+                RapidSphinx.this.originalWords = Arrays.asList(words.trim().split(" "));
+                RapidSphinx.this.oovWords = Arrays.asList(oovWords);
+                RapidSphinx.this.vocabularies.addAll(RapidSphinx.this.originalWords);
+                RapidSphinx.this.vocabularies.addAll(RapidSphinx.this.oovWords);
+                generateDictonary(new HashSet<String>(RapidSphinx.this.vocabularies).toArray(new String[0]));
+                generateNGramModel(new HashSet<String>(RapidSphinx.this.vocabularies).toArray(new String[0]));
                 return null;
             }
             @Override
@@ -259,17 +278,23 @@ public class RapidSphinx implements RecognitionListener {
         }.execute();
     }
 
-    public void updateVocabulary(final String[] words, @Nullable final RapidCompletionListener rapidCompletionListener) {
+    public void updateVocabulary(final String[] words, @Nullable final String[] oovWords, @Nullable final RapidCompletionListener rapidCompletionListener) {
         new AsyncTask<Void, Void, Exception>() {
             @Override
             protected void onPreExecute() {
+                RapidSphinx.this.originalWords.clear();
+                RapidSphinx.this.oovWords.clear();
+                RapidSphinx.this.vocabularies.clear();
                 System.out.println("Updating vocabulary!");
             }
             @Override
             protected Exception doInBackground(Void... params) {
-                RapidSphinx.this.words = new HashSet<String>(Arrays.asList(words)).toArray(new String[0]);
-                generateDictonary(RapidSphinx.this.words);
-                generateNGramModel(RapidSphinx.this.words);
+                RapidSphinx.this.originalWords = Arrays.asList(words);
+                RapidSphinx.this.oovWords = Arrays.asList(oovWords);
+                RapidSphinx.this.vocabularies.addAll(RapidSphinx.this.originalWords);
+                RapidSphinx.this.vocabularies.addAll(RapidSphinx.this.oovWords);
+                generateDictonary(new HashSet<String>(RapidSphinx.this.vocabularies).toArray(new String[0]));
+                generateNGramModel(new HashSet<String>(RapidSphinx.this.vocabularies).toArray(new String[0]));
                 return null;
             }
             @Override
@@ -285,21 +310,22 @@ public class RapidSphinx implements RecognitionListener {
         }.execute();
     }
 
-    public void updateGrammar(final String grammarStr, @Nullable final File dictionary, @Nullable final RapidCompletionListener rapidCompletionListener) {
+    public void updateGrammar(final String grammarStr, @Nullable final String[] oogWords, @Nullable final RapidCompletionListener rapidCompletionListener) {
         new AsyncTask<Void, Void, Exception>() {
             @Override
             protected void onPreExecute() {
+                RapidSphinx.this.originalWords.clear();
+                RapidSphinx.this.oovWords.clear();
+                RapidSphinx.this.vocabularies.clear();
                 System.out.println("Updating vocabulary!");
             }
             @Override
             protected Exception doInBackground(Void... params) {
-                if (dictionary != null) {
-                    if (dictionary.isFile()) {
-                        rapidRecognizer.getRapidDecoder().loadDict(dictionary.getPath(), null, "dict");
-                    } else {
-                        Log.e("RapidSphinx", dictionary.getPath() + " is not a dictionary file");
-                    }
-                }
+                RapidSphinx.this.originalWords = Arrays.asList(grammarStr.trim().split(" "));
+                RapidSphinx.this.oovWords = Arrays.asList(oogWords);
+                RapidSphinx.this.vocabularies.addAll(RapidSphinx.this.originalWords);
+                RapidSphinx.this.vocabularies.addAll(RapidSphinx.this.oovWords);
+                generateDictonary(new HashSet<String>(RapidSphinx.this.vocabularies).toArray(new String[0]));
                 rapidRecognizer.getRapidDecoder().setJsgfString(SEARCH_ID, grammarStr);
                 return null;
             }
@@ -483,22 +509,23 @@ public class RapidSphinx implements RecognitionListener {
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
             SegmentIterator segmentIterator = rapidRecognizer.getRapidDecoder().seg().iterator();
+            String hypStr = "";
             while (segmentIterator.hasNext()) {
                 Segment segment = segmentIterator.next();
                 double score =  rapidRecognizer.getRapidDecoder().getLogmath().exp(segment.getProb());
-//                if (segment.getWord().equalsIgnoreCase("[SPEECH]")) {
-//                    scores.add(score);
-//                    hypArr.add("?");
-//
-//                }
                 if (!segment.getWord().contains("<") && !segment.getWord().contains(">") &&
                         !segment.getWord().contains("[") && !segment.getWord().contains("]")) {
+                    if (originalWords.contains(segment.getWord())) {
+                        hypStr += segment.getWord() + " ";
+                    } else {
+                        hypStr += "??? ";
+                    }
                     scores.add(score);
                     hypArr.add(segment.getWord());
                 }
             }
             if (rapidSphinxListener != null) {
-                rapidSphinxListener.rapidSphinxFinalResult(hypothesis.getHypstr(), hypArr, scores);
+                rapidSphinxListener.rapidSphinxFinalResult(hypStr.trim(), hypArr, scores);
             }
         }
     }

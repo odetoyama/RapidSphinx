@@ -8,7 +8,8 @@ Android library for offline speech recognition base on Pocketsphinx engine. Add 
 - [x] Support PCM Recorder 16bits / mono little endian (wav file)
 - [x] Scoring system for every single word (range 0.0 - 1.0)
 - [x] Detect unsupported words
-- [x] Rejecting Out-Of-Vocabulary (In progress)
+- [x] Rejecting Out-Of-Vocabulary (OOV) based on keyword spotting
+- [x] Speaker Adaptation (in progress)
 - [x] SIMPLE TO USE & FAST!
 
 ## Preview
@@ -20,7 +21,7 @@ I have tried to speak in different word order:
 ## Gradle
 Add to build.gradle :
 ```groovy
-compile 'com.icaksama.rapidsphinx:master:2.0.8'
+compile 'com.icaksama.rapidsphinx:master:2.0.9'
 ```
 
 # How to Use
@@ -77,6 +78,10 @@ public void rapidSphinxDidStop(String reason, int code) {
 @Override
 public void rapidSphinxFinalResult(String result, List<String> hypArr, List<Double> scores) {
     System.out.println("Full Result : " + result);
+    // NOTE :
+    // [x] parameter "result" : Give final response with ??? values when word out-of-vocabulary.
+    // [x] parameter "hypArr" : Give final response in original words without ??? values.
+    
     // Get score from every single word. hypArr length equal with scores length
     for (double score: scores) {
         System.out.println(score);
@@ -132,7 +137,8 @@ rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
 You can update the vocabulary with language model or JSGF Grammar on the fly:
 ```java
 // Update vocabulary with language model from single string
-rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidCompletionListener() {
+rapidSphinx.updateVocabulary("YOUR TEXT HERE!",
+                                new String[]{"KEYWORD SPOTTING!", ...}, new RapidCompletionListener() {
     @Override
     public void rapidCompletedProcess() {
         System.out.println("Vocabulary updated!");
@@ -140,7 +146,8 @@ rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidCompletionListener() {
 });
 
 // Update vocabulary with language model from array string
-rapidSphinx.updateVocabulary(new String[]{"TEXT1!", "TEXT2!", ...}, new RapidCompletionListener() {
+rapidSphinx.updateVocabulary(new String[]{"TEXT1!", "TEXT2!", ...},
+                                new String[]{"KEYWORD SPOTTING!", ...}, new RapidCompletionListener() {
     @Override
     public void rapidCompletedProcess() {
         System.out.println("Vocabulary updated!");
@@ -148,7 +155,8 @@ rapidSphinx.updateVocabulary(new String[]{"TEXT1!", "TEXT2!", ...}, new RapidCom
 });
 
 // Update vocabulary with JSGF Grammar from string
-rapidSphinx.updateGrammar("YOUR TEXT HERE!", new File("Dictonary Path"), new RapidCompletionListener() {
+rapidSphinx.updateGrammar("YOUR TEXT HERE!",
+                                new String[]{"KEYWORD SPOTTING!", ...}, new RapidCompletionListener() {
     @Override
     public void rapidCompletedProcess() {
         System.out.println("Vocabulary updated!");
@@ -163,6 +171,7 @@ rapidSphinx.startRapidSphinx(10000);
 ```
 
 ## Play Audio Record
+Make sure play audio record after speech recognizer is done.
 ```java
 rapidSphinx.getRapidRecorder().play(new RapidCompletionListener() {
     @Override
