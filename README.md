@@ -134,7 +134,8 @@ rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
 ```
 
 ## Update Language Model / Grammar
-You can update the vocabulary with language model or JSGF Grammar on the fly:
+You can update the vocabulary with language model or JSGF Grammar on the fly.
+Make sure to remove the punctuation before update vocabulary/grammar.
 ```java
 // Update vocabulary with language model from single string
 rapidSphinx.updateVocabulary("YOUR TEXT HERE!",
