@@ -131,7 +131,7 @@ rapidSphinx.prepareRapidSphinx(new RapidPreparationListener() {
 ## Update Language Model / Grammar
 You can update the vocabulary with language model or JSGF Grammar on the fly:
 ```java
-// Update vocabulary with language model
+// Update vocabulary with language model from single string
 rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidCompletionListener() {
     @Override
     public void rapidCompletedProcess() {
@@ -139,7 +139,15 @@ rapidSphinx.updateVocabulary("YOUR TEXT HERE!", new RapidCompletionListener() {
     }
 });
 
-// Update vocabulary with JSGF Grammar
+// Update vocabulary with language model from array string
+rapidSphinx.updateVocabulary(new String[]{"TEXT1!", "TEXT2!", ...}, new RapidCompletionListener() {
+    @Override
+    public void rapidCompletedProcess() {
+        System.out.println("Vocabulary updated!");
+    }
+});
+
+// Update vocabulary with JSGF Grammar from string
 rapidSphinx.updateGrammar("YOUR TEXT HERE!", new File("Dictonary Path"), new RapidCompletionListener() {
     @Override
     public void rapidCompletedProcess() {
