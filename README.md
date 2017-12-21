@@ -6,7 +6,7 @@ Android library for offline speech recognition base on Pocketsphinx engine. Add 
 - [x] Build language model (Arpa File) on the fly
 - [x] Build JSGF Grammar on the fly
 - [x] Support PCM Recorder 16bits / mono little endian (wav file)
-- [x] Scoring system for every single word (range 0.0 - 1.0)
+- [x] Scoring system every single word (range 0.0 - 1.0)
 - [x] Detect unsupported words
 - [x] Rejecting Out-Of-Vocabulary (OOV) based on keyword spotting
 - [x] Speaker Adaptation (in progress)
